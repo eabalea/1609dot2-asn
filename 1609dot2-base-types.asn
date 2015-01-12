@@ -245,13 +245,32 @@ EXPORTS ALL;
   -- ------------------------------------------------------------------
 
 
-   ItsAidSsp ::= 
-        SEQUENCE  { psid       ItsAid,
-                    ssp        OCTET STRING (SIZE(0..MAX))
-                  }
-                  
+  ItsAidSsp ::= SEQUENCE {
+      psid                  ItsAid,
+      ssp                   Ssp OPTIONAL
+  }
 
   ItsAid ::= Uint32 -- should at least be unsigned
+
+  Ssp ::= CHOICE {
+      opaque              OCTET STRING (SIZE(0..MAX)),
+      ... -- will define Structured SSP here
+  }
+
+
+  ItsAidSspRange ::= SEQUENCE {
+      psid                ItsAid,
+      sspRange            SspRange OPTIONAL
+  }
+
+  SspRange ::= CHOICE {
+      opaque              OCTET STRING (SIZE(0..MAX)),
+      all                 NULL,
+      ... -- will define Structured SSP Range here
+  }
+    
+
+
 
   -- ------------------------------------------------------------------
   -- 
