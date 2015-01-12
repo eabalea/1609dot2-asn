@@ -1,0 +1,89 @@
+  IssuerIdentifier ::= CHOICE  { 
+    ecdsaNistP256AndDigest  HashedId8,
+    algorithmAndDigest      SEQUENCE  { 
+        algorithm           PKAlgorithm,
+        digest              HashedId8
+    },
+    self                    HashAlgorithm,
+    ...
+  }
+
+
+
+  ToBeSignedCertificate ::= SEQUENCE  { 
+    id                      CHOICE {
+        linkageData             LinkageData OPTIONAL,
+        name                    Hostname OPTIONAL,
+    },
+    crlSeries               CrlSeries,
+    validityPeriod          ValidityPeriod,
+    region                  GeographicRegion OPTIONAL,
+    assuranceLevel          SubjectAssurance OPTIONAL
+    appPermissions          AppPermissions OPTIONAL,
+    certIssuePermissions    CertIssuePermissions OPTIONAL,
+    certReqPermissions      CertReqPermissions OPTIONAL,
+    encryptionKey           PublicKey OPTIONAL,
+    cryptomaterial          CHOICE {
+        verificationKey         PublicKey OPTIONAL,
+        reconstructionValue     EccNistP256CurvePoint OPTIONAL,
+    }
+    ...
+  }
+  (WITH COMPONENTS { ..., appPermissions PRESENT} |
+   WITH COMPONENTS { ..., certIssuePermissions PRESENT} |
+   WITH COMPONENTS { ..., certReqPermissions PRESENT})
+
+
+  -- LinkageData as before
+
+  AppPermissions ::= SEQUENCE OF ItsAidSsp
+
+  ItsAidSsp ::= SEQUENCE {
+      psid                  ItsAid,
+      ssp                   Ssp OPTIONAL
+  }
+
+  Ssp := CHOICE {
+      opaque              OCTET STRING (SIZE(0..MAX)),
+      ... -- will define Structured SSP here
+  }
+
+  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) }
+
+  CertIssuePermissions ::= SEQUENCE OF 
+      SEQUENCE            {
+          itsAidRangeDepth ItsAidSspRangeDepth
+          certType         CertIssuancePermissions OPTIONAL DEFAULT app(0)
+      }
+
+  CertReqPermissions ::= SEQUENCE OF ItsAidSspRangeDepth
+
+  ItsAidSspRangeDepth ::= SEQUENCE {
+      psidSspRange        CHOICE {
+          explicit        SEQUENCE OF ItsAidSspRange,
+          all             NULL,
+          ...
+      }
+      minDepth            INTEGER OPTIONAL DEFAULT 1, -- 0 for enrolment certs
+      depthRange          INTEGER OPTIONAL DEFAULT 0, -- max = min + range
+      certType            CertIssuancePermissions OPTIONAL DEFAULT app(0)
+  }
+
+  ItsAidSspRange ::= SEQUENCE {
+      psid                ItsAid,
+      sspRange            SspRange OPTIONAL
+  }
+
+  SspRange ::= CHOICE {
+      opaque              OCTET STRING (SIZE(0..MAX)),
+      all                 NULL,
+      ... -- will define Structured SSP Range here
+  }
+
+-- 
+-- NOTES
+--
+-- 1. I think it's best if Cert Request is a custom type of message rather
+--    than being a standard SignedData. The processing is too different
+--    otherwise. AFAICT all other message types can be standard SignedData.
+
