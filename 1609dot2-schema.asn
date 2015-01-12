@@ -3,17 +3,55 @@
 --<OSS.UNBOUNDED IA5String>--
 --<OSS.UNBOUNDED OCTET STRING>--
 --<OSS.UNBOUNDED BIT STRING>--
+--<OSS.LONG>--
 
 IEEE1609dot2 {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
-dot2(2) v2sec(2)}
+dot2(2) base (1) schema (1)}
 -- 
 --********************************************************************** 
--- * IEEE P1609.2 Message Data Types 
+-- 
+-- IEEE P1609.2 Message Data Types 
 -- 
 --********************************************************************** 
  DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
  
+EXPORTS ALL;
+
+IMPORTS 
+  CrlSeries,
+  EccNistP256CurvePoint,
+  EciesNistP256EncryptedKey,
+  GeographicRegion,
+  GroupLinkageValue,
+  HashAlgorithm,
+  HashedId3,
+  HashedId8,
+  HashedId32,
+  Hostname,
+  ItsAid,
+  ItsAidSsp,
+  IValue,
+  LinkageValue,
+  Opaque,
+  PKAlgorithm,
+  PublicKey,
+  Signature,
+  SubjectAssurance,
+  SymmetricKey,
+  ThreeDLocation,
+  Time64,
+  Time64WithStandardDeviation,
+  Uint3,
+  Uint8,
+  Uint16, 
+  Uint32,
+  ValidityPeriod
+FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
+    standards-association-numbered-series-standards(2) wave-stds(1609)  
+    dot2(2) base(1) base-types(2)}
+
+;
 
 -- 
 --********************************************************************** 
@@ -22,222 +60,96 @@ dot2(2) v2sec(2)}
 -- 
 --**********************************************************************  
 
+TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
-  -- Modified version of 103 097 Ch 5.1
-  -- SecuredContent split out just to keep lines from being too long.
-  SecuredData ::=
-        SEQUENCE  { protocolVersion           Uint8,
-                    messageContent            SecuredContent
-                  }
+  Ieee1609Dot2Data ::= SEQUENCE {
+    protocolVersion           Uint8(1),
+    messageContent            MessageContent
+  }
 
-  -- Modified version of 103 097 Ch 5.1, 5.2.
-  -- Distinguish between subtypes of Data, SignedData, and EncryptedData to 
-  -- clarify the mapping between data structures and processing. Current
-  -- version of 103 097 allows you to put together incomplete structures (for
-  -- example, messages with signed payload type but no signature or signer
-  -- info; or messages with two payloads, one signed and one not). This 
-  -- approach ensures that messages can be processed. 
+  MessageContent ::= CHOICE  { 
+    unsecuredData     Opaque, 
+    signedData        SignedData,
+    encryptedData     EncryptedData,
+    ...
+  }
 
-  -- Payload type signed_and_encrypted is not supported: to send a signed
-  -- and encrypted message, first encrypt the message, then sign the resulting
-  -- encrypted data.
-  SecuredContent ::=
-        CHOICE  { unsecuredData     Data,
-                  signedData        SignedData,
-                  encryptedData     EncryptedData,
-                  -- removed signedWsa         SignedWsa,
-                  -- removed crlRequest        CrlRequest,
-                  -- removed crl               Crl,
-                  -- these will be addressed by extension fields within 1609.2.
-                  ...
-                }
+  SignedData ::= SEQUENCE  { 
+    hashId          HashAlgorithm,
+    tbsData         ToBeSignedData,
+    signer          SignerIdentifier,
+    signature       Signature
+  }
 
-  -- Modified version of 103 097 Ch 5.2
-  -- Payload type unsecured
-  Data ::= OCTET STRING
-  
-  -- Modified version of 103 097 Ch 5.1, 5.2, 5.6
-  -- Payload type signed and/or signed_external
-  -- As noted for SecuredContent, the motivation is to ensure that all valid
-  -- data types have known processing associated with them.
-  SignedData ::=
-        SEQUENCE  { signer          SignerIdentifier,
-                    unsignedData    ToBeSignedData,
-                    signature       Signature
-                  }
+  SignerIdentifier ::= CHOICE    { 
+    digestWithEcdsa256                     HashedId8,
+    certificate                            SEQUENCE OF Certificate,
+    certificateDigestWithOtherAlgorithm    SEQUENCE  { 
+      algorithm   PKAlgorithm,
+      digest      HashedId8
+    },
+    ...
+  }
 
-  -- Modified version of 103 097 Ch 4.2.11
-  -- Simplified by merging certificate and certificate_chain, otherwise
-  -- the same elements.
-  SignerIdentifier ::=
-        CHOICE    { digestWithEcdsa256
-                                    HashedId8,
-                    certificate     SEQUENCE OF Certificate,
-                    certificateDigestWithOtherAlgorithm
-                                    SEQUENCE  { algorithm   PKAlgorithm,
-                                                digest      HashedId8
-                                              },
-                     ...
-                  }
-
-  -- 103 097 Ch 4.2.13
-  HashedId8 ::= OCTET STRING (SIZE(8))
-
-  -- 103 097 Ch 4.2.14
-  HashedId3 ::= OCTET STRING (SIZE(3))
-
-  -- Modified version of 103 097 Ch 5.2. 
-  -- Payload type signed and/or signed_external
-  -- As noted for SecuredContent, the motivation is to ensure that all valid
-  -- data types have known processing associated with them.
-  -- The two subtypes were split out just to prevent lines from becoming too
-  -- long.
-  ToBeSignedData ::=
-        SEQUENCE  { headerInfo      HeaderInfo,
-                    payload         SignedDataPayload
-                  }
-
-  -- Modified version of 103 097 Ch 5.4. Changes:
-
-  -- 1) Contains all the HeaderField types except those that contain crypto
-  -- information. Crypto information is in the SignerIdentifier or
-  -- RecipientInfo fields. Crypto information is separated out to support
-  -- single-pass processing cleanly.
-  
-  -- 2) Include PSID to support 1609.2 approach, which uses PSID rather
-  -- than message type. 
-
-  -- 3) Include MissingCrlIdentifier to support epidemic distribution of
-  -- CRLs for 1609.2
-
-  -- QUESTION on 103 097: Should messageType appear in the certificate? Is
-  -- messageType associated with a given PSID? It seems that messageType and
-  -- PSID are doing similar work - this should be clarified.
-
-  -- NOTE: Signed WSAs will be supported in here by an extension field.
-
-  HeaderInfo ::= -- must include either psid or message_type
-        SEQUENCE  { psid                   ItsAid OPTIONAL,
-                    messageType            Uint16 OPTIONAL,
-                    -- include security profile value here?
-                    generationTime         Time64WithStandardDeviation OPTIONAL,
-                    expiryTime             Time64  OPTIONAL,
-                    generationLocation     ThreeDLocation OPTIONAL,
-                    missingCertIdentifier  HashedId3 OPTIONAL,
-                    missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
-                    -- include permission indices for signed WSAs here?
-                    ...
-                  }
-                   (WITH COMPONENTS {..., psid PRESENT} |
-                    WITH COMPONENTS {..., messageType PRESENT})
-
-  -- Modified version of 103 097 Ch 5.2. Changes:
-  -- 1) Ensures that all payloads in a signed data are signed, which maps
-  -- data structures more closely to processing. 103 097 allows a payload
-  -- within a signed message that is not itself signed. With this approach,
-  -- such a payload is instead sent separately (which seems sensible since it
-  -- is generated separately and processed separately by the receiver).
-
-  SignedDataPayload ::= -- must include at least one element
-        SEQUENCE  { data             OCTET STRING OPTIONAL,
-                    extDataHash      OCTET STRING (SIZE (32)) OPTIONAL,
-                    ...
-                  }
-                   (WITH COMPONENTS {..., data PRESENT} |
-                    WITH COMPONENTS {..., extDataHash PRESENT})
+  ToBeSignedData ::= SEQUENCE  { 
+    payload         SignedDataPayload,
+    headerInfo      HeaderInfo
+  }
 
 
-  -- TS 103 097 Ch 4.2.20
-  ThreeDLocation ::=
-        SEQUENCE  { latitude        Latitude,
-                    longitude       Longitude,
-                    elevation       Elevation
-                  }
+  HeaderInfo ::= SEQUENCE  { 
+      psid                   ItsAid,
+      generationTime         Time64WithStandardDeviation OPTIONAL,
+      expiryTime             Time64  OPTIONAL,
+      generationLocation     ThreeDLocation OPTIONAL,
+      missingCertIdentifier  HashedId3 OPTIONAL,
+      missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
+      responseEncryptionKey  CHOICE {
+          public               PublicKey,
+          symmetric            SymmetricKey 
+      }                        OPTIONAL,
+      ...
+  }
 
-  -- TS 103 097 Ch 4.2.20
-  Latitude ::= NinetyDegreeInt
-
-  
-  -- TS 103 097 Ch 4.2.20
-  Longitude ::= OneEightyDegreeInt
-
-  -- TS 103 097 Ch 4.2.20
-  Elevation ::= ElevInt
+  SignedDataPayload ::= SEQUENCE  { 
+      data             OCTET STRING OPTIONAL,
+      extDataHash      OCTET STRING (SIZE (32)) OPTIONAL,
+      ...
+  }
+      (WITH COMPONENTS {..., data PRESENT} |
+       WITH COMPONENTS {..., extDataHash PRESENT})
+       -- must include at least one element
 
   -- NEW, designed to support epidemic distribution in 1609.2 setting.
   MissingCrlIdentifier ::=                  
         SEQUENCE  { caId            HashedId8,
                     crlSeries       Uint32,
-                    crlSerial       Uint32
-                  }
-  -- Modified version of 103 097 Ch. 4.2.9.
-  -- Support EcdsaNistP224Signature for consistency with 1609.2.
-  Signature ::=
-        CHOICE  { ecdsa256Signature EcdsaNistP256Signature,
-                  ecdsa224Signature EcdsaNistP224Signature,
-                  ...
-                }
-  -- 103 097 Ch. 4.2.10
-  EcdsaNistP256Signature ::= -- note: alternative is to import from X9.62 / SEC 1
-        SEQUENCE {  r     EccNistP256CurvePoint,
-                    s     BIT STRING (SIZE (256))
-                 }
-
-  -- Not in 103 097
-  -- Support EcdsaNistP224Signature for consistency with 1609.2.
-  EcdsaNistP224Signature ::= -- note: alternative is to import from X9.62 / SEC 1
-        SEQUENCE {  r     EccNistP224CurvePoint,
-                    s     BIT STRING (SIZE (224))
-                 }
-
-  -- Modified version of 103 097 Ch. 4.2.5. Changes:
-  -- 1) Support EcdsaNistP224Signature for consistency with 1609.2.
-  -- 2) Have a separate curve type for each different curve size. This can
-  -- be replaced using a WITH COMPONENTS formulation - I wasn't aware of
-  -- WITH COMPONENTS when I was originally writing this.
-  
-  EccCurvePoint ::=
-        CHOICE   {  ecc256           EccNistP256CurvePoint,
-                    ecc224           EccNistP224CurvePoint,
-                    ...
-                 }
-  -- Modified version of 103 097 Ch. 4.2.5 specific to this curve size. 
-  -- This can be replaced by a generic curve structure where field sizes
-  -- are set using WITH COMPONENTS.
-  EccNistP256CurvePoint ::= -- note: alternative is to import from X9.62 / SEC 1
-        CHOICE    { x-only           BIT STRING (SIZE (256)),
-                    fill             NULL,  -- consistency with 1363 / X9.62
-                    compressed-y-0   BIT STRING (SIZE (256)),
-                    compressed-y-1   BIT STRING (SIZE (256)),
-                    uncompressed     SEQUENCE {
-                                       x BIT STRING (SIZE (256)),
-                                       y BIT STRING (SIZE (256))
-                                     }
+                    crlSerial       Uint32,
+                    chunkId         Uint16
                   }
 
-  -- Modified version of 103 097 Ch. 4.2.5 specific to this curve size. 
-  -- This can be replaced by a generic curve structure where field sizes
-  -- are set using WITH COMPONENTS.
-  EccNistP224CurvePoint ::= -- note: alternative is to import from X9.62 / SEC 1
-        CHOICE    { x-only           BIT STRING (SIZE (224)),
-                    fill             NULL,  -- consistency with 1363 / X9.62
-                    compressed-y-0   BIT STRING (SIZE (224)),
-                    compressed-y-1   BIT STRING (SIZE (224)),
-                    uncompressed     SEQUENCE {
-                                       x BIT STRING (SIZE (224)),
-                                       y BIT STRING (SIZE (224))
-                                     }
-                  }
-
-  -- Modified version of 103 097 Ch 4.2.2
-  -- Supports EcdsaNistP224WithSha224 for consistency with 1609.2.
-  PKAlgorithm ::=
-        ENUMERATED  { ecdsaNistp224WithSha224,
-                      ecdsaNistp256WithSha256, 
-                      eciesNistp256,
-                      ...
-                    } 
-
+  -- New, designed to support aggregated signatures
+  Countersignature ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
+    messageContent (WITH COMPONENTS {..., 
+      signedData  (WITH COMPONENTS {..., 
+        tbsData (WITH COMPONENTS {..., 
+          payload (WITH COMPONENTS {..., 
+            data ABSENT,
+            extDataHash PRESENT
+          }),
+          headerInfo (WITH COMPONENTS {..., 
+            psid PRESENT,
+            generationTime PRESENT,
+            expiryTime ABSENT,
+            generationLocation ABSENT,
+            missingCertIdentifier ABSENT,
+            missingCrlIdentifier ABSENT,
+            responseEncryptionKey ABSENT
+          })
+        })
+      })
+    })
+  })
 
 --********************************************************************** 
 -- 
@@ -246,54 +158,53 @@ dot2(2) v2sec(2)}
 --**********************************************************************  
 
 
-  -- Modified version of 103 097 Ch 5.1, 5.2, 5.6
-  -- Payload type encrypted
-  -- As noted for SecuredContent, the motivation is to ensure that all valid
-  -- data types have known processing associated with them.
   EncryptedData ::=
         SEQUENCE  { recipients     SEQUENCE OF RecipientInfo,
-                    encParams      EncryptionParameters,
-                    ciphertext     OCTET STRING
+                    ciphertext     SymmetricCiphertext
                   }
 
-  -- 103 097 Ch 4.2.7
-  -- Identical contents except that explicit statement of symm_algorithm
-  -- is replaced by indication of symm_algorithm via CHOICE value.
-  EncryptionParameters ::=
-        CHOICE  { aes128ccm           AesCcmEncParams,
+  -- The three different PKRecipientInfo types are to let the receiver know how
+  -- to look up the decryption key:
+  -- * certRecipInfo: The data was encrypted using the encryption key in a cert.
+  --   This field contains the HashedId8 of the cert.
+  -- * signedDataRecipInfo: The data was encrypted using the response encryption
+  --   key from a SignedData. This field contains the HashedId8 of the
+  --   1609Dot2Data containing the SignedData containing the encryption key.
+  -- * rekRecipInfo: The data was encrypted using a response encryption key. The
+  --   structure contains the HashedId8 of the response encryption key. This
+  --   should only be used if the signedData is not available as it potentially
+  --   allows misbinding attacks: it is included in these structures
+  --   specifically to enable certificate response encryption from the PCA
+  --   to the end-entity device.
+  RecipientInfo ::=
+        CHOICE    { symmRecipInfo       SymmRecipientInfo,
+                    certRecipInfo       PKRecipientInfo, 
+                    signedDataRecipInfo PKRecipientInfo, 
+                    rekRecipInfo        PKRecipientInfo 
+                  }
+         
+  SymmRecipientInfo ::= OCTET STRING (SIZE(8))
+
+  PKRecipientInfo ::= SEQUENCE  { 
+    recipientId        HashedId8, 
+      -- recipientId is hash of cert in the case of certRecipInfo, hash of 
+      -- signedData that included the response encryption key in the case of 
+      -- rekRecipInfo.
+    encKey             CHOICE  { 
+       eciesNistp256   EciesNistP256EncryptedKey,
+       ...
+    }
+  }
+
+  SymmetricCiphertext ::=
+        CHOICE  { aes128ccm           AesCcmCiphertext,
                   ...
                  }
 
-  -- 103 097 Ch 4.2.7, split out for clarity.
-  AesCcmEncParams ::=
+  AesCcmCiphertext ::=
         SEQUENCE  { nonce           OCTET STRING (SIZE (12)),
-                    ccmCiphertext   Opaque
+                    ccmCiphertext   Opaque -- 16 bytes longer than plaintext
                   }
-
-  -- 103 097 Ch 4.2.3
-  -- reserved values omitted; they can be included easily if that's
-  -- helpful, though they should perhaps ahve different numbers if they're
-  -- going before the extension marker.
-  SymmAlgorithm ::=
-        ENUMERATED  { aes128Ccm,
-                      ...
-                    }
-
-  -- 103 097 Ch 5.8
-  RecipientInfo ::=
-        SEQUENCE  { certId          HashedId8,
-                    encKey          CHOICE  { eciesNistp256       EciesNistP256EncryptedKey,
-                                              ...
-                                            }
-                  }
-
-  -- 103 097 Ch 5.9
-  EciesNistP256EncryptedKey ::=
-        SEQUENCE  { v               EccCurvePoint,
-                    c               OCTET STRING (SIZE (16)),
-                    t               OCTET STRING (SIZE (16)) -- inconsistent with .2 but fixes long-standing annoyance
-                  }
-
 
 
 --********************************************************************** 
@@ -304,278 +215,150 @@ dot2(2) v2sec(2)}
 -- 
 --********************************************************************** 
 
-  -- Modified form of 103 097 Ch 6.1.
+-- Certificates are implicit (type = implicit, toBeSigned includes 
+-- reconstruction value, signature absent) or explicit (type = explicit,
+-- toBeSigned includes verification key, signature present).
 
-  -- 1) Support implicit certs directly via CertificateCryptoInfo rather
-  -- than in the text as is currently the case. The relevant constraint is
-  -- that the cert should contain either a public key and a signature, or a
-  -- reconstruction value. So the CertificateCryptoInfo is a structure
-  -- that contains either a public key and a signature or a reconstruction
-  -- value. 
+  Certificate ::= CertificateBase (ImplicitCertificate | ExplicitCertificate)
 
-  -- 2) Replace signer_info with issuer identifier. Signer_info is too
-  -- broad to be used in a certificate. The Signer indication in a cert
-  -- always has to be a digest type, and signer_info permits non-digest
-  -- types. Rather than restrict to the digest types in the English text, we
-  -- define a new type here that is only the digest types.
-
-  -- 3) Put subject info, subject attributes and validity restrictions
-  -- into a ToBeSignedCertificate. This can be reversed, but I wasn't
-  -- clear on the distinction between subject attributes and validity
-  -- restrictions so I thought it made more sense to have them in a single
-  -- container.
-
-  Certificate ::=
-        SEQUENCE  { version                 PermissibleTypes,
+  CertificateBase ::=
+        SEQUENCE  { version                 Uint8(1),
+                    type                    CertificateType,
                     issuer                  IssuerIdentifier,
                     toBeSigned              ToBeSignedCertificate,
-                    cryptoInfo              CertificateCryptoInfo
+                    signature               Signature OPTIONAL
                   }
-
-  -- Modified form of version field 103 097 Ch 6.1. 
-  -- Supports explicit and implicit certs.
-  CertType  ::= INTEGER {
-    explicit  	(2),
-    implicit  	(3)
-  } (0..255)
-
-  PermissibleTypes  ::= CertType (explicit|implicit)
-
-  -- Replaces use of SignerInfo in 103 097 Ch 6.1.
-  -- As noted above, SignerInfo allows the signer type to be certificate,
-  -- which isn't appropriate when the thing being signed is itself a
-  -- certificate.
-  IssuerIdentifier ::=
-        CHOICE  { digest              HashedId8,
-                  algorithmAndDigest  SEQUENCE  { algorithm           PKAlgorithm,
-                                                  digest              HashedId8
-                                                }
-                }
-
-  -- Modified version of 103 097 Ch. 6.2, 6.3, 
-  -- Combined attributes and validity restrictions into a single array.
-  ToBeSignedCertificate ::= 
-      SEQUENCE    { subjectType             SubjectType,
-                    name                    UTF8String (SIZE(0..32)),
-                    subjectAttributes       SubjectAttributes
-                  }
-
-  -- Modified version of 103 097 Ch 6.3 
-  -- WSA types added.
-  -- Renumbered because of added WSA types.
-  SubjectType ::=
-      ENUMERATED  { its-station-authorization, 
-                    its-station-enrolment,
-                    wsa-authorization, 
-                    wsa-enrolment,
-                    authorization-authority,
-                    enrolment-authority,
-                    root-ca,
-                    crl-signer,
-                    ...
-                  }
-
-  -- Modified version of 103 097 Ch 6.4, 6.7
-  -- 1) SubjectAttribute and Validity Restrction combined into one because
-  -- the difference between them wasn't clear
-  -- 2) ValidityPeriod used to encode time restrictions to prevent
-  -- multiple inclusion of time restrictions
-  -- 3) Removed verification key and moved it to the CertificateCryptoInfo
-  -- field to support implicit certs. This could be replaced and implicit
-  -- certs supported using WITH COMPONENTS.
-
-  -- Thoughts: 
-  -- 1) Should we require at least one of psid, psidSsp, psidPriority,
-  -- psidPrioritySsp?
-  -- 2) Should we link the SubjectType to the allowed values that appear
-  -- in this sequence via WITH COMPONENTS or similar? Currently, certificates
-  -- have a profile that's expressed entirely in English. This gives
-  -- flexibility to define additional certificate types. Should we keep the
-  -- current approach or move to more formal profiles, enforced by the
-  -- parser?
-
-  SubjectAttributes ::= 
-        SEQUENCE  { validityPeriod        ValidityPeriod,
-                    assuranceLevel        SubjectAssurance OPTIONAL,
-                    crlSeries             CrlSeries OPTIONAL,
-                    encryptionKey         PublicKey OPTIONAL,
-                    linkageData           Opaque OPTIONAL,
-                    region                GeographicRegion OPTIONAL,
-                    psid                  ItsAidArray OPTIONAL,
-                    psidSsp               ItsAidSspArray OPTIONAL,
-                    psidPriority          ItsAidPriorityArray OPTIONAL,
-                    psidPrioritySsp       ItsAidSspPriorityArray OPTIONAL,
-                    issuableSubjectTypes  SEQUENCE OF SubjectType OPTIONAL,
-                    issuableCrls          SEQUENCE OF IssuableCrl OPTIONAL,
-                    ...
-                  }
-
-  -- Modified version of 103 097 Ch. 6,7
-  -- Used CHOICE to enforce only having one expression of expiry.
-  -- Also, 6.7 uses start_and_duration rather than durationAndExpiry; I
-  -- used durationAndExpiry, which is consistent with 1609.2 and which means
-  -- you always carry out the same calculation to check expiry, but this
-  -- isn't a big point and I'd be fine with changing it back to
-  -- start_and_duration.
-  ValidityPeriod ::=
-        CHOICE  { expiryOnly          Time32,
-                  startAndExpiry      SEQUENCE  { expiry         Time32,
-                                                  startValidity  Time32
-                                                },
-                  durationAndExpiry   SEQUENCE  { expiry         Time32,
-                                                  duration       Duration
-                                                }
-                  -- should be expiryAndDuration obviously
-                }
-
-  -- 103 097 Ch. 4.2.18
-  -- Definition explicitly splits out timeUnit and timeValue, but this is
-  -- consistent with the definition in 103 097.
-  Duration ::=
-        SEQUENCE  { timeUnit            TimeUnit,       
-                    timeValue           INTEGER(0..8191)
-                  } 
-
-  -- 103 097 Ch. 4.2.18
-  TimeUnit ::=  ENUMERATED {
-    seconds,
-    minutes,
-    hours,
-    sixtyHours,
-    years 
+  
+  CertificateType  ::= ENUMERATED {
+      explicit,
+      implicit,
+      ...
   }
 
-  
-  -- 103 097 Ch. 6.6
-  SubjectAssurance ::= BIT STRING (SIZE(8))
+  ImplicitCertificate ::= CertificateBase (WITH COMPONENTS {...,
+      type(implicit),
+      toBeSigned(WITH COMPONENTS {..., 
+          verificationKey ABSENT, 
+          reconstructionValue PRESENT
+      }), 
+      signature ABSENT
+  })
 
-  -- 103 097 Ch. 4.2.8
-  CrlSeries ::= Uint32
+  ExplicitCertificate ::= CertificateBase (WITH COMPONENTS {...,
+      type(explicit),
+      toBeSigned(WITH COMPONENTS {..., 
+          verificationKey PRESENT, 
+          reconstructionValue ABSENT
+      }), 
+      signature PRESENT
+  })
 
-  -- Modified version of 103 097 Ch. 4.2.4
-  -- Specifies just ecdsaVerification rather than ecdsa_nistp256
-  -- verification to allow for support of NIST p224.
-  PublicKey ::=
-        CHOICE  { ecdsaVerificationKey      EccCurvePoint,
-                  eciesEncryptionKey        SEQUENCE  { supportedSymmAlg  SymmAlgorithm,
-                                                        publicKey         EccCurvePoint
-                                                      },
-                  ...
-                }
+  IssuerIdentifier ::= CHOICE  { 
+    ecdsaNistP256AndDigest  HashedId8,
+    algorithmAndDigest      SEQUENCE  { 
+        algorithm           PKAlgorithm,
+        digest              HashedId8
+    },
+    self                    HashAlgorithm,
+    ...
+  }
 
-  -- 103 097 Ch. 4.2.21
-  GeographicRegion ::=
-        CHOICE  { circularRegion      CircularRegion,
-                  rectangularRegion   SEQUENCE OF RectangularRegion,
-                  polygonalRegion     PolygonalRegion,
-                  identifiedRegion    IdentifiedRegion,
-                  ...
-                }
+  ToBeSignedCertificate ::= SEQUENCE  { 
+    validityPeriod          ValidityPeriod,
+    region                  GeographicRegion OPTIONAL,
+    crlSeries               CrlSeries,
+    scope                   CHOICE { 
+      pseudonym             PseudonymScope, 
+      authorization         AuthScope, 
+      enrollment            EnrollmentScope,
+      ca                    CaScope,
+      ...
+    },
+    encryptionKey           PublicKey OPTIONAL,
+    verificationKey         PublicKey OPTIONAL,
+    reconstructionValue     EccNistP256CurvePoint OPTIONAL,
+    ...
+  }
+  (WITH COMPONENTS { ..., verificationKey PRESENT} |
+   WITH COMPONENTS { ..., reconstructionValue PRESENT})
 
-  -- 103 097 Ch. 4.2.23
-  CircularRegion ::=
-        SEQUENCE  { center          TwoDLocation,
-                    radius          Uint16
+
+
+  PseudonymScope ::= 
+        SEQUENCE  { linkageData           LinkageData,
+                    psidSsp               SEQUENCE OF ItsAidSsp,
+                    assuranceLevel        SubjectAssurance OPTIONAL
                   }
 
-  -- 103 097 Ch. 4.2.24
-  RectangularRegion ::=
-        SEQUENCE  { northWest       TwoDLocation,
-                    southEast       TwoDLocation
+  LinkageData ::= 
+        SEQUENCE  { iValue                IValue,
+                    linkage-value         LinkageValue, 
+                    group-linkage-value   GroupLinkageValue OPTIONAL
+                  }
+         
+
+  AuthScope ::= 
+        SEQUENCE  { name                  Hostname,
+                    psidSsp               SEQUENCE OF ItsAidSsp,
+                    assuranceLevel        SubjectAssurance OPTIONAL
                   }
 
-  -- 103 097 Ch 4.2.25
-  -- Modified to enforce the requirement that there are no more than 12
-  -- points.
-  PolygonalRegion ::= SEQUENCE SIZE(3..12) OF TwoDLocation
-
-  -- 103 097 Ch 4.2.19
-  TwoDLocation ::=
-        SEQUENCE  { latitude      Latitude,
-                    longitude     Longitude
-                  }
-
-  -- Modified version of 103 097 Ch 4.2.26
-  -- 103 097 version assumes that all region dictionaries are expressible
-  -- as a combination of Int16 and IntX. This restructuring has a
-  -- dictionary-specific expression of the region, which should be more
-  -- extensible.
-  IdentifiedRegion ::= 
-        CHOICE    { iso3166       ISO31661Region,
-                    un_stats      UNStatsRegion,
-                    ...
-                  }
-
-  -- Modified version of 103 097 Ch 4.2.26
-  ISO31661Region ::= 
-        SEQUENCE  { iso31661CountryCode  INTEGER (0..999),
-                    local                Uint32
-                  }
-  UNStatsRegion ::=
-        SEQUENCE  { unStatsCountryCode   Uint16,
-                    local                Uint32
-                  }
+-- Certs with an EnrollmentScope are implicitly allowed to sign messages with 
+-- PSID = 0x23 and and NOT allowed to sign messages with other PSIDs.
+  EnrollmentScope ::= SEQUENCE  { 
+      name                Hostname,
+      auths               CHOICE {
+          pseudonym-auths     SEQUENCE OF ItsAidSsp,
+          authorization-auths SEQUENCE OF ItsAidSsp,
+      ...
+      }
+  }
 
 
-  -- In 103 097 Ch 6.4.
-  -- Note that somewhere in 103 097 it should say that permissions are
-  -- inherited if not explicit.
-  ItsAidArray ::= SEQUENCE OF ItsAid
+  CaScope ::= SEQUENCE  { 
+      name                Hostname,
+      auths               CHOICE {
+          end-entity-auths  SEQUENCE {
+              pseudonym-auths     CaAuths OPTIONAL,
+              authorization-auths CaAuths OPTIONAL,
+              enrollment-auths    CHOICE {
+                  pseud               CaAuths,
+                  auth                CaAuths
+              } OPTIONAL
+          },
+          ca-auths            InnerCaScope,
+          ...
+      }
+  }
 
-  -- In 103 097 Ch 6.4.
-  ItsAidSspArray ::= SEQUENCE OF ItsAidSsp
+  InnerCaScope ::= CHOICE {
+      end-entity-auths    SEQUENCE  { 
+          pseudonym-auths     SEQUENCE OF ItsAid OPTIONAL,
+          authorization-auths SEQUENCE OF ItsAid OPTIONAL,
+          enrollment-auths    SEQUENCE OF ItsAid OPTIONAL
+      },
+      ca-auths            SEQUENCE OF ItsAid,
+      ...
+  }
 
-  -- 103 097 Ch 6.9.
-  -- Length constraint is made explicit in the data type
-  ItsAidSsp ::= 
-        SEQUENCE  { psid       ItsAid,
-                    ssp        OCTET STRING (SIZE(0..31))
-                  }
-                  
-  -- In 103 097 Ch 6.4.
-  ItsAidPriorityArray ::= SEQUENCE OF ItsAidPriority
+  CaAuths ::= SEQUENCE {
+      psid-all-ssps           SEQUENCE OF ItsAid OPTIONAL,
+      psid-allowed-ssps       SEQUENCE OF ItsAidSsp OPTIONAL,
+      psid-disallowed-ssps    SEQUENCE OF ItsAidSsp OPTIONAL,
+      ... -- could in future support regex matching
+  }
 
-  -- 103 097 Ch 6.10
-  -- Max priority value is explicitly set to 63.
-  ItsAidPriority ::= 
-        SEQUENCE  { psid         ItsAid,
-                    maxPriority  INTEGER (0..63)
-                  }
-                  
 
-  ItsAidSspPriorityArray ::= SEQUENCE OF ItsAidSspPriority
 
-  -- 103 097 Ch 6.11
-  -- Length constraint is made explicit in the data type
-  -- Max priority value is explicitly set to 63.
-  ItsAidSspPriority ::= 
-        SEQUENCE  { psid       ItsAid,
-                    ssp        OCTET STRING (SIZE(0..31)),
-                    maxPriority  INTEGER (0..63)
-                  }
-                  
-  -- NEW - for consistency with 1609.2
-  IssuableCrl ::= 
-        SEQUENCE  { ca        HashedId8,
-                    crlSeries SEQUENCE OF CrlSeries
-                  }
-        -- crlSeries should be constrained to have at least one entry
-        -- should we constrain this so numbers are always increasing?
 
-  -- NEW - supports implicit and explicit certs
-  CertificateCryptoInfo ::=
-        CHOICE  {  explicit  SEQUENCE { verificationKey  PublicKey,
-                                        signature        Signature
-                                      },
-                   implicit  EccNistP256CurvePoint,
-                   ...
-                }
+-- Certs with a CaScope are implicitly allowed to sign messages with 
+-- PSID = 0x23.
 
---********************************************************************** 
--- Certificate Management types
--- Omitted for now, not needed for 103 097
---
---********************************************************************** 
+    
+ 
+
+
+
   
 --********************************************************************** 
 -- Data Types required for internal processing of transmitted and received
@@ -585,62 +368,8 @@ dot2(2) v2sec(2)}
 
   PublicKeyReconstructionHashInput ::= -- Note, reverse order from 1609.2
         SEQUENCE  { subjectCertificate      Certificate,
-                    issuerHash              OCTET STRING (SIZE (32))
+                    issuerHash              HashedId32
                   }
 
-
---********************************************************************** 
--- PSID Data Type transposed from IEEE 1609.3.
--- The encoding below is a stopgap to get us through
---********************************************************************** 
-
-  ItsAid ::= Uint32 -- should at least be unsigned
-  
---********************************************************************** 
--- Basic Data Types
--- 
---********************************************************************** 
-  Time32 ::= Uint32
-  Time64 ::= Uint64
-  Time64WithStandardDeviation ::=
-        SEQUENCE  { time        Time64,
-                    logStdDev   Uint8
-                  }
-
-  Uint8 ::= INTEGER (0..255)                   -- (hex)                      ff
-  Uint16 ::= INTEGER (0..65535)                -- (hex)                   ff ff
-  Uint32 ::= INTEGER (0..4294967295)           -- (hex)             ff ff ff ff
-  Uint64 ::= INTEGER (0..18446744073709551615) -- (hex) ff ff ff ff ff ff ff ff
-  
-  Opaque ::= OCTET STRING
-
-  NinetyDegreeInt ::= INTEGER {
-		min 		(-900000000),
-		max 		(900000000),
-		unknown 	(900000001)
-  } (-900000000..900000001)
-
-  KnownLatitude ::= NinetyDegreeInt (min..max) -- Minus 90deg to +90deg in microdegree intervals
-  UnknownLatitude ::= NinetyDegreeInt (unknown)
-  
-  OneEightyDegreeInt ::= INTEGER {
-		min      	(-1800000000),
-		max      	(1800000000),
-		unknown  	(1800000001)
-  } (-1800000000..1800000001)
-
-  KnownLongitude ::= OneEightyDegreeInt (min..max) -- Minus 180deg to +180deg in microdegree intervals
-  UnknownLongitude ::= OneEightyDegreeInt (unknown)
-  
-  ElevInt ::= INTEGER  {
-		max  		(61439),
-		min  		(-4095),
-		unknown		(-4096)
-  } (-4096..61439)
-
-  MaxElev ::= ElevInt (max)
-  MinElev ::= ElevInt (min)
-  KnownElev ::= ElevInt (min..max)  -- Minus 409.5m to 6143.9m in 0.1m intervals
-  UnknownElev ::= ElevInt (unknown)
 
 END
