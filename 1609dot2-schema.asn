@@ -85,12 +85,8 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
   }
 
   SignerIdentifier ::= CHOICE    { 
-    digestWithEcdsa256                     HashedId8,
-    certificate                            SEQUENCE OF Certificate,
-    certificateDigestWithOtherAlgorithm    SEQUENCE  { 
-      algorithm   PKAlgorithm,
-      digest      HashedId8
-    },
+    digest          HashedId8,
+    certificate     SEQUENCE OF Certificate,
     ...
   }
 
@@ -313,7 +309,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
           ...
       },
       minDepth            INTEGER DEFAULT 1, -- 0 for enrolment certs
-      depthRange          INTEGER DEFAULT 0, -- max = min + range
+      depthRange          INTEGER DEFAULT 0, -- max depth = min + range
       certType            CertIssuancePermissions DEFAULT app
   }
 
