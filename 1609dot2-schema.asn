@@ -87,6 +87,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
   SignerIdentifier ::= CHOICE    { 
     digest          HashedId8,
     certificate     SEQUENCE OF Certificate,
+    self            NULL,
     ...
   }
 
