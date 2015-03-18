@@ -61,29 +61,21 @@ EXPORTS ALL;
                     logStdDev   Uint8
                   }
 
-  ValidityPeriod ::=
-        CHOICE  { expiryOnly          Time32,
-                  startAndExpiry      SEQUENCE  { expiry         Time32,
-                                                  startValidity  Time32
-                                                },
-                  durationAndExpiry   SEQUENCE  { expiry         Time32,
-                                                  duration       Duration
-                                                }
-                  -- should be expiryAndDuration obviously
-                }
-
-  Duration ::=
-        SEQUENCE  { timeUnit            TimeUnit,       
-                    timeValue           INTEGER(0..8191)
-                  } 
-
-  TimeUnit ::=  ENUMERATED {
-    seconds,
-    minutes,
-    hours,
-    sixtyHours,
-    years 
+  ValidityPeriod ::= SEQUENCE {
+      start          Time32,
+      duration       Duration
   }
+
+  Duration ::= CHOICE {
+      microseconds     Uint16,
+      milliseconds     Uint16,
+      seconds          Uint16,
+      minutes          Uint16,
+      hours            Uint16,
+      sixtyHours       Uint16,
+      years            Uint16
+  } 
+
 
   -- ------------------------------------------------------------------
   -- 
@@ -245,12 +237,12 @@ EXPORTS ALL;
   -- ------------------------------------------------------------------
 
 
-  ItsAidSsp ::= SEQUENCE {
-      psid                  ItsAid,
+  PsidSsp ::= SEQUENCE {
+      psid                  Psid,
       ssp                   Ssp OPTIONAL
   }
 
-  ItsAid ::= Uint32 -- should at least be unsigned
+  Psid ::= OCTET STRING(SIZE(1..4))
 
   Ssp ::= CHOICE {
       opaque              OCTET STRING (SIZE(0..MAX)),
@@ -258,13 +250,14 @@ EXPORTS ALL;
   }
 
 
-  ItsAidSspRange ::= SEQUENCE {
-      psid                ItsAid,
+  PsidSspRange ::= SEQUENCE {
+      psid                Psid,
       sspRange            SspRange OPTIONAL
   }
 
   SspRange ::= CHOICE {
-      opaque              OCTET STRING (SIZE(0..MAX)),
+      opaque              SEQUENCE (SIZE(0..MAX)) OF
+                              OCTET STRING (SIZE(0..MAX)),
       all                 NULL,
       ... -- will define Structured SSP Range here
   }
