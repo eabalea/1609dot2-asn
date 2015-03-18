@@ -30,9 +30,9 @@ IMPORTS
   HashedId8,
   HashedId32,
   Hostname,
-  ItsAid,
-  ItsAidSsp,
-  ItsAidSspRange,
+  Psid,
+  PsidSsp,
+  PsidSspRange,
   IValue,
   LinkageValue,
   Opaque,
@@ -66,15 +66,13 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   Ieee1609Dot2Data ::= SEQUENCE {
-    protocolVersion           Uint8(1),
-    messageContent            MessageContent
-  }
-
-  MessageContent ::= CHOICE  { 
-    unsecuredData     Opaque, 
-    signedData        SignedData,
-    encryptedData     EncryptedData,
-    ...
+    protocolVersion    Uint8(3),
+    messageContent     CHOICE  { 
+        unsecuredData      Opaque, 
+        signedData         SignedData,
+        encryptedData      EncryptedData,
+        ...
+    }
   }
 
   SignedData ::= SEQUENCE  { 
@@ -98,7 +96,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
 
   HeaderInfo ::= SEQUENCE  { 
-      psid                   ItsAid,
+      psid                   Psid,
       generationTime         Time64WithStandardDeviation OPTIONAL,
       expiryTime             Time64  OPTIONAL,
       generationLocation     ThreeDLocation OPTIONAL,
@@ -183,7 +181,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
                     rekRecipInfo        PKRecipientInfo 
                   }
          
-  SymmRecipientInfo ::= OCTET STRING (SIZE(8))
+  SymmRecipientInfo ::= HashedId8
 
   PKRecipientInfo ::= SEQUENCE  { 
     recipientId        HashedId8, 
@@ -260,6 +258,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     self                    HashAlgorithm,
     ...
   }
+
   ToBeSignedCertificate ::= SEQUENCE  { 
     id                      CHOICE {
         linkageData             LinkageData ,
@@ -271,8 +270,8 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     region                  GeographicRegion OPTIONAL,
     assuranceLevel          SubjectAssurance OPTIONAL,
     appPermissions          AppPermissions OPTIONAL,
-    certIssuePermissions    CertIssuePermissions OPTIONAL,
-    certReqPermissions      CertReqPermissions OPTIONAL,
+    certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
+    certReqPermissions      SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
     encryptionKey           PublicKey OPTIONAL,
     cryptomaterial          CHOICE {
         verificationKey         PublicKey,
@@ -291,31 +290,18 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  AppPermissions ::= SEQUENCE OF ItsAidSsp
+  AppPermissions ::= SEQUENCE OF PsidSsp
 
-  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) }
+  CertTypePermissions ::= BIT STRING {app (0), enrol (1) }
 
-  CertIssuePermissions ::= SEQUENCE OF 
-      SEQUENCE            {
-          itsAidRangeDepth ItsAidSspRangeDepth,
-          certType         CertIssuancePermissions DEFAULT app
-      }
 
-  CertReqPermissions ::= SEQUENCE OF ItsAidSspRangeDepth
-
-  ItsAidSspRangeDepth ::= SEQUENCE {
-      psidSspRange        CHOICE {
-          explicit        SEQUENCE OF ItsAidSspRange,
-          all             NULL,
-          ...
-      },
-      minDepth            INTEGER DEFAULT 1, -- 0 for enrolment certs
-      depthRange          INTEGER DEFAULT 0, -- max depth = min + range
+  PsidSspRangeChainDepth ::= SEQUENCE {
+      psidSspRange        SEQUENCE OF PsidSspRange,
+      minChainDepth       INTEGER DEFAULT 1, -- 0 for enrolment certs
+      chainDepthRange     INTEGER DEFAULT 0, -- max depth = min + range
       certType            CertIssuancePermissions DEFAULT app
   }
 
-
- 
 
   
 --********************************************************************** 
