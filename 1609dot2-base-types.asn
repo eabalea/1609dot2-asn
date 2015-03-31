@@ -86,9 +86,11 @@ EXPORTS ALL;
 
   GeographicRegion ::=
         CHOICE  { circularRegion      CircularRegion,
-                  rectangularRegion   SEQUENCE OF RectangularRegion,
+                  rectangularRegion   SEQUENCE (SIZE(1..MAX)) OF
+                                          RectangularRegion,
                   polygonalRegion     PolygonalRegion,
-                  identifiedRegion    IdentifiedRegion,
+                  identifiedRegion    SEQUENCE (SIZE(1..MAX)) OF
+                                          IdentifiedRegion,
                   ...
                 }
 

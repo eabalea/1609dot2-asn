@@ -261,8 +261,9 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   ToBeSignedCertificate ::= SEQUENCE  { 
     id                      CHOICE {
-        linkageData             LinkageData ,
-        name                    Hostname ,
+        linkageData             LinkageData,
+        name                    Hostname,
+        binaryId                OCTET STRING(SIZE(1..64))
         ...
     },
     crlSeries               CrlSeries,
@@ -271,7 +272,9 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     assuranceLevel          SubjectAssurance OPTIONAL,
     appPermissions          AppPermissions OPTIONAL,
     certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
-    certReqPermissions      SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
+    explicitCertReqPermissions      
+                            SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
+    canRequestRollover      NULL OPTIONAL,
     encryptionKey           PublicKey OPTIONAL,
     cryptomaterial          CHOICE {
         verificationKey         PublicKey,
