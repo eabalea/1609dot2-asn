@@ -271,7 +271,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     region                  GeographicRegion OPTIONAL,
     assuranceLevel          SubjectAssurance OPTIONAL,
     appPermissions          AppPermissions OPTIONAL,
-    certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
+    certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL,
     explicitCertReqPermissions      
                             SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
     canRequestRollover      NULL OPTIONAL,
@@ -299,7 +299,11 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
 
   PsidSspRangeChainDepth ::= SEQUENCE {
-      psidSspRange        SEQUENCE OF PsidSspRange,
+      psids               CHOICE {
+        all                  NULL,
+        explicit             SEQUENCE OF PsidSspRange,
+        ...
+      },  
       minChainDepth       INTEGER DEFAULT 1, -- 0 for enrolment certs
       chainDepthRange     INTEGER DEFAULT 0, -- max depth = min + range
       certType            CertIssuancePermissions DEFAULT app
