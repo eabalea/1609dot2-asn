@@ -1,0 +1,20 @@
+<OssGuiProject product="ASN.1 Studio" productVersion="7.1" version="2.0">
+ <Asn1Files>
+  <File>1609dot2-schema.asn</File>
+  <File>1609dot2-base-types.asn</File>
+ </Asn1Files>
+ <CompilerSettings/>
+ <EncodingFiles/>
+ <Settings>
+  <Setting name="-noRelaxedMode" present="false"/>
+  <Setting name="-root"/>
+  <Setting name="AUTOMATIC_ENCDEC"/>
+  <Setting name="OSS_AUTO_ENCODE_WITHOUT_CHECKING_CONSTRAINT"/>
+  <Setting name="DEBUGPDU"/>
+  <Setting name="OSS_PRINT_TYPE_INFO"/>
+  <Setting name="OSS_PRINT_OFFSET"/>
+  <Setting name="OSS_PRINT_COMMENTS"/>
+  <Setting name="OSS_HEXBYTES"/>
+  <Setting name="-oer"/>
+ </Settings>
+</OssGuiProject>

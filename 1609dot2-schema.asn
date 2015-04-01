@@ -136,7 +136,6 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
             extDataHash PRESENT
           }),
           headerInfo (WITH COMPONENTS {..., 
-            psid PRESENT,
             generationTime PRESENT,
             expiryTime ABSENT,
             generationLocation ABSENT,
@@ -263,7 +262,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     id                      CHOICE {
         linkageData             LinkageData,
         name                    Hostname,
-        binaryId                OCTET STRING(SIZE(1..64))
+        binaryId                OCTET STRING(SIZE(1..64)),
         ...
     },
     crlSeries               CrlSeries,
@@ -272,8 +271,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
     assuranceLevel          SubjectAssurance OPTIONAL,
     appPermissions          AppPermissions OPTIONAL,
     certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL,
-    explicitCertReqPermissions      
-                            SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
+    certReqPermissions      SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
     canRequestRollover      NULL OPTIONAL,
     encryptionKey           PublicKey OPTIONAL,
     cryptomaterial          CHOICE {
@@ -306,7 +304,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
       },  
       minChainDepth       INTEGER DEFAULT 1, -- 0 for enrolment certs
       chainDepthRange     INTEGER DEFAULT 0, -- max depth = min + range
-      certType            CertIssuancePermissions DEFAULT app
+      certType            CertTypePermissions DEFAULT {app}
   }
 
 
