@@ -7,14 +7,15 @@
  <EncodingFiles/>
  <Settings>
   <Setting name="-noRelaxedMode" present="false"/>
+  <Setting name="-oer"/>
   <Setting name="-root"/>
   <Setting name="AUTOMATIC_ENCDEC"/>
-  <Setting name="OSS_AUTO_ENCODE_WITHOUT_CHECKING_CONSTRAINT"/>
+  <Setting name="Additional Options">-warningMessages -noRelaxedMode</Setting>
   <Setting name="DEBUGPDU"/>
-  <Setting name="OSS_PRINT_TYPE_INFO"/>
-  <Setting name="OSS_PRINT_OFFSET"/>
-  <Setting name="OSS_PRINT_COMMENTS"/>
+  <Setting name="OSS_AUTO_ENCODE_WITHOUT_CHECKING_CONSTRAINT"/>
   <Setting name="OSS_HEXBYTES"/>
-  <Setting name="-oer"/>
+  <Setting name="OSS_PRINT_COMMENTS"/>
+  <Setting name="OSS_PRINT_OFFSET"/>
+  <Setting name="OSS_PRINT_TYPE_INFO"/>
  </Settings>
 </OssGuiProject>
