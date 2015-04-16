@@ -1,14 +1,21 @@
-<OssGuiProject product="ASN.1 Studio" productVersion="7.1" version="2.0">
+<OssGuiProject version="2.0" product="ASN.1 Studio" productVersion="7.1">
  <Asn1Files>
   <File>1609dot2-schema.asn</File>
   <File>1609dot2-base-types.asn</File>
+  <File>1609dot2-P2P.asn</File>
  </Asn1Files>
  <CompilerSettings/>
- <EncodingFiles/>
+ <EncodingFiles>
+  <File pduName="ExplicitCertTest" encRule="OER" format="binary">ExplicitCertTest.oer</File>
+  <File pduName="ExplicitCertTest" encRule="ASN.1 Value Notation">ExplicitCertTest.txt</File>
+  <File pduName="ImplicitCertTest" encRule="ASN.1 Value Notation">ImplicitCertTest.txt</File>
+  <File pduName="ImplicitCertTest" encRule="OER" format="binary">ImplicitCertTest.oer</File>
+ </EncodingFiles>
  <Settings>
-  <Setting name="-noRelaxedMode" present="false"/>
+  <Setting present="false" name="-noRelaxedMode"/>
   <Setting name="-oer"/>
   <Setting name="-root"/>
+  <Setting name="-xer"/>
   <Setting name="AUTOMATIC_ENCDEC"/>
   <Setting name="Additional Options">-warningMessages -noRelaxedMode</Setting>
   <Setting name="DEBUGPDU"/>

@@ -321,6 +321,9 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
                   }
 
 
+ImplicitCertTest ::= ImplicitCertificate
+ExplicitCertTest ::= ExplicitCertificate
+
 END
 
 
