@@ -3,16 +3,19 @@
   <File>1609dot2-schema.asn</File>
   <File>1609dot2-base-types.asn</File>
   <File>1609dot2-P2P.asn</File>
+  <File>crl-base-types.asn</File>
+  <File>crl-protocol.asn</File>
+  <File>wsa-ssp.asn</File>
  </Asn1Files>
  <CompilerSettings/>
  <EncodingFiles>
-  <File pduName="ExplicitCertTest" encRule="OER" format="binary">ExplicitCertTest.oer</File>
-  <File pduName="ExplicitCertTest" encRule="ASN.1 Value Notation">ExplicitCertTest.txt</File>
-  <File pduName="ImplicitCertTest" encRule="ASN.1 Value Notation">ImplicitCertTest.txt</File>
-  <File pduName="ImplicitCertTest" encRule="OER" format="binary">ImplicitCertTest.oer</File>
+  <File encRule="OER" pduName="ExplicitCertTest" format="binary">ExplicitCertTest.oer</File>
+  <File encRule="ASN.1 Value Notation" pduName="ExplicitCertTest">ExplicitCertTest.txt</File>
+  <File encRule="ASN.1 Value Notation" pduName="ImplicitCertTest">ImplicitCertTest.txt</File>
+  <File encRule="OER" pduName="ImplicitCertTest" format="binary">ImplicitCertTest.oer</File>
  </EncodingFiles>
  <Settings>
-  <Setting present="false" name="-noRelaxedMode"/>
+  <Setting name="-noRelaxedMode" present="false"/>
   <Setting name="-oer"/>
   <Setting name="-root"/>
   <Setting name="-xer"/>
@@ -20,6 +23,7 @@
   <Setting name="Additional Options">-warningMessages -noRelaxedMode</Setting>
   <Setting name="DEBUGPDU"/>
   <Setting name="OSS_AUTO_ENCODE_WITHOUT_CHECKING_CONSTRAINT"/>
+  <Setting name="OSS_DEBUG_LEVEL_4"/>
   <Setting name="OSS_HEXBYTES"/>
   <Setting name="OSS_PRINT_COMMENTS"/>
   <Setting name="OSS_PRINT_OFFSET"/>

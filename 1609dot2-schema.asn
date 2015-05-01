@@ -1,19 +1,12 @@
---<OSS.UNBOUNDED SEQUENCE OF>-- 
---<OSS.UNBOUNDED UTF8String>--
---<OSS.UNBOUNDED IA5String>--
---<OSS.UNBOUNDED OCTET STRING>--
---<OSS.UNBOUNDED BIT STRING>--
---<OSS.LONG>--
-
 IEEE1609dot2 {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
 dot2(2) base (1) schema (1)}
+
+--******************************************************************************
 -- 
---********************************************************************** 
+-- IEEE P1609.2 Data Types 
 -- 
--- IEEE P1609.2 Message Data Types 
--- 
---********************************************************************** 
+--******************************************************************************
 
  DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
  
@@ -23,32 +16,36 @@ IMPORTS
   CrlSeries,
   EccNistP256CurvePoint,
   EciesNistP256EncryptedKey,
+  EncryptionKey,
   GeographicRegion,
   GroupLinkageValue,
   HashAlgorithm,
   HashedId3,
-  HashedId8,
   HashedId32,
+  HashedId8,
   Hostname,
-  Psid,
-  PsidSsp,
-  PsidSspRange,
   IValue,
   LinkageValue,
   Opaque,
   PKAlgorithm,
-  PublicKey,
+  Psid,
+  PsidSsp,
+  PsidSspRange,
+  PublicEncryptionKey,
+  PublicVerificationKey,
+  SequenceOfPsidSsp,
+  SequenceOfPsidSspRange,
   Signature,
   Ssp,
   SubjectAssurance,
-  SymmetricKey,
+  SymmetricEncryptionKey,
   ThreeDLocation,
   Time64,
   Time64WithStandardDeviation,
-  Uint3,
-  Uint8,
   Uint16, 
+  Uint3,
   Uint32,
+  Uint8,
   ValidityPeriod
 FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
     standards-association-numbered-series-standards(2) wave-stds(1609)  
@@ -56,23 +53,27 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
 ;
 
+TestPsidGroupPermissions ::= PsidGroupPermissions
+
+
 -- 
---********************************************************************** 
+--********************************************************************* 
 -- 
 --  Structures for describing secured data
 -- 
---**********************************************************************  
+--*********************************************************************  
 
-TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   Ieee1609Dot2Data ::= SEQUENCE {
     protocolVersion    Uint8(3),
-    messageContent     CHOICE  { 
-        unsecuredData      Opaque, 
-        signedData         SignedData,
-        encryptedData      EncryptedData,
-        ...
-    }
+    content            Ieee1609Dot2Content
+  }
+
+  Ieee1609Dot2Content ::=  CHOICE  { 
+    unsecuredData      Opaque, 
+    signedData         SignedData,
+    encryptedData      EncryptedData,
+    ...
   }
 
   SignedData ::= SEQUENCE  { 
@@ -84,7 +85,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   SignerIdentifier ::= CHOICE    { 
     digest          HashedId8,
-    certificate     SEQUENCE OF Certificate,
+    certificate     SequenceOfCertificate,
     self            NULL,
     ...
   }
@@ -102,10 +103,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
       generationLocation     ThreeDLocation OPTIONAL,
       missingCertIdentifier  HashedId3 OPTIONAL,
       missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
-      responseEncryptionKey  CHOICE {
-          public               PublicKey,
-          symmetric            SymmetricKey 
-      }                        OPTIONAL,
+      encryptionKey          EncryptionKey OPTIONAL,
       ...
   }
 
@@ -128,7 +126,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   -- New, designed to support aggregated signatures
   Countersignature ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
-    messageContent (WITH COMPONENTS {..., 
+    content (WITH COMPONENTS {..., 
       signedData  (WITH COMPONENTS {..., 
         tbsData (WITH COMPONENTS {..., 
           payload (WITH COMPONENTS {..., 
@@ -141,7 +139,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
             generationLocation ABSENT,
             missingCertIdentifier ABSENT,
             missingCrlIdentifier ABSENT,
-            responseEncryptionKey ABSENT
+            encryptionKey ABSENT
           })
         })
       })
@@ -156,7 +154,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
 
   EncryptedData ::=
-        SEQUENCE  { recipients     SEQUENCE OF RecipientInfo,
+        SEQUENCE  { recipients     SequenceOfRecipientInfo,
                     ciphertext     SymmetricCiphertext
                   }
 
@@ -166,10 +164,10 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
   --   This field contains the HashedId8 of the cert.
   -- * signedDataRecipInfo: The data was encrypted using the response encryption
   --   key from a SignedData. This field contains the HashedId8 of the
-  --   1609Dot2Data containing the SignedData containing the encryption key.
+  --   Ieee1609Dot2Data containing the SignedData containing the encryption key.
   -- * rekRecipInfo: The data was encrypted using a response encryption key. The
   --   structure contains the HashedId8 of the response encryption key. This
-  --   should only be used if the signedData is not available as it potentially
+  --   should only be used if the SignedData is not available as it potentially
   --   allows misbinding attacks: it is included in these structures
   --   specifically to enable certificate response encryption from the PCA
   --   to the end-entity device.
@@ -180,19 +178,19 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
                     rekRecipInfo        PKRecipientInfo 
                   }
          
+  SequenceOfRecipientInfo ::= SEQUENCE OF RecipientInfo
+
   SymmRecipientInfo ::= HashedId8
 
   PKRecipientInfo ::= SEQUENCE  { 
     recipientId        HashedId8, 
-      -- recipientId is hash of cert in the case of certRecipInfo, hash of 
-      -- signedData that included the response encryption key in the case of 
-      -- rekRecipInfo.
-    encKey             CHOICE  { 
-       eciesNistp256   EciesNistP256EncryptedKey,
-       ...
-    }
+    encKey             EncryptedDataEncryptionKey
   }
 
+  EncryptedDataEncryptionKey ::= CHOICE  { 
+       eciesNistp256   EciesNistP256EncryptedKey,
+       ...
+  }
   SymmetricCiphertext ::=
         CHOICE  { aes128ccm           AesCcmCiphertext,
                   ...
@@ -218,6 +216,8 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 
   Certificate ::= CertificateBase (ImplicitCertificate | ExplicitCertificate)
 
+  SequenceOfCertificate ::= SEQUENCE OF Certificate
+
   CertificateBase ::=
         SEQUENCE  { version                 Uint8(1),
                     type                    CertificateType,
@@ -235,7 +235,7 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
   ImplicitCertificate ::= CertificateBase (WITH COMPONENTS {...,
       type(implicit),
       toBeSigned(WITH COMPONENTS {..., 
-          cryptomaterial(WITH COMPONENTS {reconstructionValue})
+          verifyKeyIndicator(WITH COMPONENTS {reconstructionValue})
       }), 
       signature ABSENT
   })
@@ -243,47 +243,42 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
   ExplicitCertificate ::= CertificateBase (WITH COMPONENTS {...,
       type(explicit),
       toBeSigned(WITH COMPONENTS {..., 
-          cryptomaterial(WITH COMPONENTS {verificationKey})
+          verifyKeyIndicator(WITH COMPONENTS {verificationKey})
       }), 
       signature PRESENT
   })
 
   IssuerIdentifier ::= CHOICE  { 
     ecdsaNistP256AndDigest  HashedId8,
-    algorithmAndDigest      SEQUENCE  { 
-        algorithm           PKAlgorithm,
-        digest              HashedId8
-    },
     self                    HashAlgorithm,
     ...
   }
 
   ToBeSignedCertificate ::= SEQUENCE  { 
-    id                      CHOICE {
-        linkageData             LinkageData,
-        name                    Hostname,
-        binaryId                OCTET STRING(SIZE(1..64)),
-        ...
-    },
-    crlSeries               CrlSeries,
-    validityPeriod          ValidityPeriod,
-    region                  GeographicRegion OPTIONAL,
-    assuranceLevel          SubjectAssurance OPTIONAL,
-    appPermissions          AppPermissions OPTIONAL,
-    certIssuePermissions    SEQUENCE OF PsidSspRangeChainDepth OPTIONAL,
-    certReqPermissions      SEQUENCE OF PsidSspRangeChainDepth OPTIONAL, 
-    canRequestRollover      NULL OPTIONAL,
-    encryptionKey           PublicKey OPTIONAL,
-    cryptomaterial          CHOICE {
-        verificationKey         PublicKey,
-        reconstructionValue     EccNistP256CurvePoint
-    },
+    id                     CertificateId,
+    crlSeries              CrlSeries,
+    validityPeriod         ValidityPeriod,
+    region                 GeographicRegion OPTIONAL,
+    assuranceLevel         SubjectAssurance OPTIONAL,
+    appPermissions         SequenceOfPsidSsp OPTIONAL,
+    certIssuePermissions   SequenceOfPsidGroupPermissions OPTIONAL,
+    explicitCertReqPermissions 
+                           SequenceOfPsidGroupPermissions OPTIONAL, 
+    canRequestRollover     NULL OPTIONAL,
+    encryptionKey          PublicEncryptionKey OPTIONAL,
+    verifyKeyIndicator     VerificationKeyIndicator,
     ...
   }
   (WITH COMPONENTS { ..., appPermissions PRESENT} |
    WITH COMPONENTS { ..., certIssuePermissions PRESENT} |
-   WITH COMPONENTS { ..., certReqPermissions PRESENT})
+   WITH COMPONENTS { ..., explicitCertReqPermissions PRESENT})
 
+   CertificateId ::= CHOICE {
+        linkageData             LinkageData,
+        name                    Hostname,
+        binaryId                OCTET STRING(SIZE(1..64)),
+        ...
+    }
 
   LinkageData ::= 
         SEQUENCE  { iValue                IValue,
@@ -291,20 +286,27 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  AppPermissions ::= SEQUENCE OF PsidSsp
+  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) }
 
-  CertTypePermissions ::= BIT STRING {app (0), enrol (1) }
+  PsidGroupPermissions ::= SEQUENCE {
+      subjectPsids       SubjectPsids,
+      minChainDepth      INTEGER DEFAULT 1, -- 0 for enrolment certs
+      chainDepthRange    INTEGER DEFAULT 0, -- max depth = min + range
+      certType           CertIssuancePermissions DEFAULT {app}
+  }
+
+  SequenceOfPsidGroupPermissions ::= SEQUENCE OF PsidGroupPermissions
+
+  SubjectPsids ::= CHOICE {
+          explicit        SequenceOfPsidSspRange,
+          all             NULL,
+          ...
+  }
 
 
-  PsidSspRangeChainDepth ::= SEQUENCE {
-      psids               CHOICE {
-        all                  NULL,
-        explicit             SEQUENCE OF PsidSspRange,
-        ...
-      },  
-      minChainDepth       INTEGER DEFAULT 1, -- 0 for enrolment certs
-      chainDepthRange     INTEGER DEFAULT 0, -- max depth = min + range
-      certType            CertTypePermissions DEFAULT {app}
+  VerificationKeyIndicator ::= CHOICE {
+        verificationKey         PublicVerificationKey,
+        reconstructionValue     EccNistP256CurvePoint
   }
 
 
@@ -315,15 +317,10 @@ TestIeee1609Dot2Data ::= Ieee1609Dot2Data
 --
 --********************************************************************** 
 
-  PublicKeyReconstructionHashInput ::= -- Note, reverse order from 1609.2
+  PublicKeyReconstructionHashInput ::= -- Note, reverse order from 1609.2-2013
         SEQUENCE  { subjectCertificate      Certificate,
                     issuerHash              HashedId32
                   }
 
 
-ImplicitCertTest ::= ImplicitCertificate
-ExplicitCertTest ::= ExplicitCertificate
-
 END
-
-

@@ -1,19 +1,12 @@
---<OSS.UNBOUNDED SEQUENCE OF>--
---<OSS.UNBOUNDED UTF8String>--
---<OSS.UNBOUNDED IA5String>--
---<OSS.UNBOUNDED OCTET STRING>--
---<OSS.UNBOUNDED BIT STRING>--
---<OSS.LONG>--
-
 IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
 dot2(2) base(1) base-types(2)}
 
 -- 
---********************************************************************** 
--- * IEEE P1609.2 Message Data Types 
+--********************************************************************
+-- * IEEE P1609.2 Base Data Types 
 -- 
---********************************************************************** 
+--******************************************************************** 
  DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
  
 EXPORTS ALL;
@@ -61,7 +54,7 @@ EXPORTS ALL;
                     logStdDev   Uint8
                   }
 
-  ValidityPeriod ::= SEQUENCE {
+ValidityPeriod ::= SEQUENCE {
       start          Time32,
       duration       Duration
   }
@@ -76,7 +69,6 @@ EXPORTS ALL;
       years            Uint16
   } 
 
-
   -- ------------------------------------------------------------------
   -- 
   -- Location
@@ -84,13 +76,11 @@ EXPORTS ALL;
   -- ------------------------------------------------------------------
 
 
-  GeographicRegion ::=
+GeographicRegion ::=
         CHOICE  { circularRegion      CircularRegion,
-                  rectangularRegion   SEQUENCE (SIZE(1..MAX)) OF
-                                          RectangularRegion,
+                  rectangularRegion   SequenceOfRectangularRegion,
                   polygonalRegion     PolygonalRegion,
-                  identifiedRegion    SEQUENCE (SIZE(1..MAX)) OF
-                                          IdentifiedRegion,
+                  identifiedRegion    SequenceOfIdentifiedRegion,
                   ...
                 }
 
@@ -104,6 +94,8 @@ EXPORTS ALL;
                     southEast       TwoDLocation
                   }
 
+  SequenceOfRectangularRegion ::= SEQUENCE OF RectangularRegion
+
   PolygonalRegion ::= SEQUENCE SIZE(3..12) OF TwoDLocation
 
   TwoDLocation ::=
@@ -112,19 +104,13 @@ EXPORTS ALL;
                   }
 
   IdentifiedRegion ::= 
-        CHOICE    { iso3166       ISO31661Region,
-                    un-stats      UNStatsRegion,
-                    ...
+        SEQUENCE  { unStatsCountryCode   Uint16,
+                    local                Uint32 DEFAULT 0
                   }
 
-  ISO31661Region ::= 
-        SEQUENCE  { iso31661CountryCode  INTEGER (0..999),
-                    local                Uint32
-                  }
-  UNStatsRegion ::=
-        SEQUENCE  { unStatsCountryCode   Uint16,
-                    local                Uint32
-                  }
+  SequenceOfIdentifiedRegion ::= SEQUENCE OF IdentifiedRegion
+
+
   ThreeDLocation ::=
         SEQUENCE  { latitude        Latitude,
                     longitude       Longitude,
@@ -215,19 +201,30 @@ EXPORTS ALL;
   EciesNistP256EncryptedKey ::=
         SEQUENCE  { v               EccNistP256CurvePoint,
                     c               OCTET STRING (SIZE (16)),
-                    t               OCTET STRING (SIZE (16)) -- inconsistent with .2 but fixes long-standing annoyance
+                    t               OCTET STRING (SIZE (16))
                   }
 
-  
-  PublicKey ::=
-        CHOICE  { ecdsaVerificationKey      EccCurvePoint,
-                  eciesEncryptionKey        SEQUENCE  { supportedSymmAlg  SymmAlgorithm,
-                                                        publicKey         EccCurvePoint
-                                                      },
-                  ...
-                }
+  EncryptionKey ::= CHOICE {
+          public               PublicEncryptionKey,
+          symmetric            SymmetricEncryptionKey 
+  }
 
-  SymmetricKey ::= CHOICE {
+  PublicEncryptionKey ::= SEQUENCE  { 
+          supportedSymmAlg      SymmAlgorithm,
+          publicKey             BasePublicEncryptionKey
+      }
+
+  BasePublicEncryptionKey ::= CHOICE { 
+          eciesNistP256      EccNistP256CurvePoint,
+          ...
+      }
+
+  PublicVerificationKey ::= CHOICE  { 
+      ecdsaNistP256             EccNistP256CurvePoint,
+      ...
+  }
+
+  SymmetricEncryptionKey ::= CHOICE {
       aes128Ccm     OCTET STRING(SIZE(16)),
       ...
   }
@@ -239,18 +236,17 @@ EXPORTS ALL;
   -- ------------------------------------------------------------------
 
 
+  Psid ::= INTEGER (0..MAX)
+
   PsidSsp ::= SEQUENCE {
       psid                  Psid,
       ssp                   Ssp OPTIONAL
   }
 
-  Psid ::= OCTET STRING(SIZE(1..4))
-
   Ssp ::= CHOICE {
       opaque              OCTET STRING (SIZE(0..MAX)),
       ... -- will define Structured SSP here
   }
-
 
   PsidSspRange ::= SEQUENCE {
       psid                Psid,
@@ -258,13 +254,16 @@ EXPORTS ALL;
   }
 
   SspRange ::= CHOICE {
-      opaque              SEQUENCE (SIZE(0..MAX)) OF
-                              OCTET STRING (SIZE(0..MAX)),
+      opaque              SequenceOfOctetString,
       all                 NULL,
       ... -- will define Structured SSP Range here
   }
     
 
+  SequenceOfPsid ::= SEQUENCE OF Psid
+  SequenceOfPsidSsp::= SEQUENCE OF PsidSsp
+  SequenceOfPsidSspRange ::= SEQUENCE OF PsidSspRange
+  SequenceOfOctetString ::= SEQUENCE OF OCTET STRING
 
 
   -- ------------------------------------------------------------------
@@ -275,8 +274,7 @@ EXPORTS ALL;
 
   SubjectAssurance ::= OCTET STRING (SIZE(1))
 
-  CrlSeries ::= Uint32
-
+  CrlSeries ::= Uint16
   
 
   -- ------------------------------------------------------------------
