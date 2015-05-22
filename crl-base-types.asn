@@ -48,10 +48,10 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
 CrlContents ::= SEQUENCE {
     version            Uint8 (1),
-    crl-series         CrlSeries,             --already defined in IEEE 1609-2-schema
-    ca-id              HashedId8,             --defined in IEEE1609dot2BaseTypes
-    issue-date         Time32,                --defined in IEEE1609dot2BaseTypes
-    next-crl           Time32,                --defined in IEEE1609dot2BaseTypes
+    crl-series         CrlSeries,
+    craca-ca-id        HashedId8,
+    issue-date         Time32,   
+    next-crl           Time32,  
     type-specific      CHOICE {
         tbs-crl               ToBeSignedCrl,            
         tbs-pseudonym-crl     ToBeSignedPseudonymCrl,
@@ -151,10 +151,12 @@ GroupCrlEntry ::= SEQUENCE {
 
   CrlSsp::= SEQUENCE {
       version         Uint8(1),
-      ca              HashedId8,
+      cracaType       CracaType,
       crls            SEQUENCE OF PermissibleCrls,
       ...
   }
+
+  CracaType ::= ENUMERATED {self, issuer}
       
   PermissibleCrls ::= SEQUENCE {
       type            CrlType,
