@@ -129,26 +129,6 @@ GroupCrlEntry ::= SEQUENCE {
 --
 --
 
--- Notes about ca identifier here:
--- 1. This identifies the CA on behalf of which the CRL signer can issue CRLs.
--- 2. The CA that issues the CRL signing certificate has to be either the CA
---    identified by "ca" or  in the chain leading to "ca'.
---    2a. This means that that issuing CA has to have PSID 0x24 in its 
---        "all-ssps" field. This is fine even if it's otherwise a pseudonym
---        CA: it's just one more byte.
--- 3. There's a slight break in the model here, as in order to check that 
---    the SSP is valid, the receiving device needs not only the SSP from the 
---    cert, but also the issuer ID. For other applications it isn't necessary
---    to output the issuer ID. is this the API we want?
--- 4. Is HsshedId8 long enough? It's possible for two CAs under the same issuer
---    to have the same 8-byte hash. A CRL signer could get approved to issue
---    CRLs for one of the CAs and use it to issue CRLs for the other. Should
---    we have something more specific? Hostname? 16 or 32-byte hash? Or should
---    the issuer just take on the responsibility to check that there are no
---    collisions (but can it? It doesn't issue all certs in its hierarchy 
---    and doesn't necessarily even know them).
-
-
   CrlSsp::= SEQUENCE {
       version         Uint8(1),
       cracaType       CracaType,
