@@ -2,7 +2,7 @@
 
 IEEE1609dot2Crl {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
-dot2(2) crl(3) protocol(1)}
+dot2(2) crl(3) protocol(2)}
 
 DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
 
@@ -21,11 +21,11 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     standards-association-numbered-series-standards(2) wave-stds(1609)  
     dot2(2) base(1) base-types(2)}
 
-  IndividualCrlContents,
-  PseudonymCrlContents
+  HashCrlContents,
+  LinkedCrlContents
 FROM IEEE1609dot2CrlBaseTypes {iso(1) identified-organization(3) ieee(111) 
     standards-association-numbered-series-standards(2) wave-stds(1609)  
-    dot2(2) crl(3) base-types(2)}
+    dot2(2) crl(3) base-types(1)}
 
 ;
 
@@ -38,7 +38,7 @@ SecuredCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
         payload (WITH COMPONENTS {..., 
           data (WITH COMPONENTS {...,
              content (WITH COMPONENTS {
-                unsecuredData (CONTAINING IndividualCrlContents)
+                unsecuredData (CONTAINING HashCrlContents)
             })
           })
         }),
@@ -56,14 +56,14 @@ SecuredCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
   })
 })
 
-SecuredPseudonymCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {..., 
+SecuredLinkedCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {..., 
   content (WITH COMPONENTS {..., 
     signedData  (WITH COMPONENTS {..., 
       tbsData (WITH COMPONENTS {..., 
         payload (WITH COMPONENTS {..., 
           data (WITH COMPONENTS {...,
              content (WITH COMPONENTS {
-                unsecuredData (CONTAINING PseudonymCrlContents)
+                unsecuredData (CONTAINING LinkedCrlContents)
             })
           })
         }),

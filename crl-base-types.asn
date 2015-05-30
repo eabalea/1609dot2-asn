@@ -7,7 +7,7 @@
 
 IEEE1609dot2CrlBaseTypes {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
-dot2(2) crl(3) base-types(2)}
+dot2(2) crl(3) base-types(1)}
 
 DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
 
@@ -48,105 +48,87 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
 CrlContents ::= SEQUENCE {
     version            Uint8 (1),
-    crl-series         CrlSeries,
-    craca-ca-id        HashedId8,
-    issue-date         Time32,   
-    next-crl           Time32,  
-    type-specific      CHOICE {
-        tbs-crl               ToBeSignedCrl,            
-        tbs-pseudonym-crl     ToBeSignedPseudonymCrl,
+    crlSeries          CrlSeries,
+    cracaId            HashedId8,
+    issueDate          Time32,   
+    nextCrl            Time32,  
+    typeSpecific       CHOICE {
+        tbsHashCrl           ToBeSignedHashIdCrl,            
+        tbsLinkedCrl         ToBeSignedLinkageValueCrl,
         ...
     }
 }    
 
-PseudonymCrlContents ::= CrlContents (WITH COMPONENTS { ...,
-    type-specific(WITH COMPONENTS {tbs-pseudonym-crl})
+LinkedCrlContents ::= CrlContents (WITH COMPONENTS { ...,
+    typeSpecific(WITH COMPONENTS {tbsLinkedCrl})
 })
 
-IndividualCrlContents ::= CrlContents (WITH COMPONENTS { ...,
-    type-specific(WITH COMPONENTS {tbs-crl})
+
+HashCrlContents ::= CrlContents (WITH COMPONENTS { ...,
+    typeSpecific(WITH COMPONENTS {tbsHashCrl})
 })
 
-ToBeSignedCrl ::= SEQUENCE {  
-    crl-serial         Uint32,                --defined in IEEE1609dot2BaseTypes
-    expiring-entries   SEQUENCE OF SEQUENCE {
-            id         HashedId10,
-            expiry     Time32
-    },
+ToBeSignedHashIdCrl ::= SEQUENCE {  
+    crlSerial         Uint32,
+    entries           SequenceOfHashBasedRevocationInfo,
     ...
 }
 
-ToBeSignedPseudonymCrl ::= SEQUENCE {  
+HashBasedRevocationInfo ::= SEQUENCE {
+            id         HashedId10,
+            expiry     Time32
+}
+
+SequenceOfHashBasedRevocationInfo ::= 
+    SEQUENCE OF HashBasedRevocationInfo
+
+ToBeSignedLinkageValueCrl ::= SEQUENCE {  
     iValue             IValue,
-    index-within-i     Uint8,
-    pseudonyms         PseudonymCrlBody OPTIONAL,              --defined here
-    groups             GroupCrlBody OPTIONAL,
+    indexWithinI       Uint8,
+    pseudonyms         SequenceOfJMaxGroup OPTIONAL,
+    groups             SequenceOfGroupCrlEntry OPTIONAL,
     ...
 }
 (WITH COMPONENTS {..., pseudonyms PRESENT} |
  WITH COMPONENTS {..., groups PRESENT})
 
-
-PseudonymCrlBody ::= SEQUENCE OF JMaxGroup
-
-
 JMaxGroup ::= SEQUENCE {
     jmax              Uint8,
-    contents          SEQUENCE OF LAGroup
+    contents          SequenceOfLAGroup
 }
+
+SequenceOfJMaxGroup ::= SEQUENCE OF JMaxGroup
 
 LAGroup ::= SEQUENCE {
-    la1-id            LaId,
-    la2-id            LaId,
-    contents          SEQUENCE OF IMaxGroup -- WW review this & fix
+    la1Id            LaId,
+    la2Id            LaId,
+    contents          SequenceOfIMaxGroup 
 }
+
+SequenceOfLAGroup ::= SEQUENCE OF LAGroup
 
 IMaxGroup ::= SEQUENCE {
-    i-max-offset      Uint8,
-    contents          SEQUENCE OF IndividualRevocation
+    iMaxOffset        Uint8,
+    contents          SequenceOfIndividualRevocation
 }
 
+SequenceOfIMaxGroup ::= SEQUENCE OF IMaxGroup
 
 IndividualRevocation ::= SEQUENCE { 
-    linkage-seed1    LinkageSeed,
-    linkage-seed2    LinkageSeed
+    linkageSeed1    LinkageSeed,
+    linkageSeed2    LinkageSeed
 }
 
-GroupCrlBody ::= SEQUENCE OF GroupCrlEntry
-
+SequenceOfIndividualRevocation ::= SEQUENCE OF IndividualRevocation
 
 GroupCrlEntry ::= SEQUENCE {
-    la1-id            LaId,
-    la2-id            LaId,
-    i-max-offset      Uint8,
-    linkage-seed1     LinkageSeed,
-    linkage-seed2     LinkageSeed
+    iMaxOffset       Uint8,
+    la1Id            LaId,
+    linkageSeed1     LinkageSeed,
+    la2Id            LaId,
+    linkageSeed2     LinkageSeed
 }
 
---
---
--- SSP
---
---
-
-  CrlSsp::= SEQUENCE {
-      version         Uint8(1),
-      cracaType       CracaType,
-      crls            SEQUENCE OF PermissibleCrls,
-      ...
-  }
-
-  CracaType ::= ENUMERATED {self, issuer}
-      
-  PermissibleCrls ::= SEQUENCE {
-      type            CrlType,
-      crlSeries       SEQUENCE OF CrlSeries
-  }
-
-  CrlType::= ENUMERATED {
-      pseudonym,
-      non-pseudonym,
-      ...
-   }
+SequenceOfGroupCrlEntry ::= SEQUENCE OF GroupCrlEntry
 
 END

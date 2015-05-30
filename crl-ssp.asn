@@ -1,0 +1,45 @@
+--<OSS.UNBOUNDED SEQUENCE OF>--
+--<OSS.UNBOUNDED UTF8String>--
+--<OSS.UNBOUNDED IA5String>--
+--<OSS.UNBOUNDED OCTET STRING>--
+--<OSS.UNBOUNDED BIT STRING>--
+--<OSS.LONG>--
+
+IEEE1609dot2CrlSsp {iso(1) identified-organization(3) ieee(111) 
+standards-association-numbered-series-standards(2) wave-stds(1609)  
+dot2(2) crl(3) service-specific-permissions (3)}
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
+
+EXPORTS ALL;
+ 
+IMPORTS 
+  CrlSeries,
+  Uint8
+FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
+    standards-association-numbered-series-standards(2) wave-stds(1609)  
+    dot2(2) base(1) base-types(2)}
+;
+
+
+  CrlSsp::= SEQUENCE {
+      version         Uint8(1),
+      cracaType       CracaType,
+      crls            SEQUENCE OF PermissibleCrls,
+      ...
+  }
+
+  CracaType ::= ENUMERATED {self, issuer}
+      
+  PermissibleCrls ::= SEQUENCE {
+      type            CrlType,
+      crlSeries       SEQUENCE OF CrlSeries
+  }
+
+  CrlType::= ENUMERATED {
+      hashed,
+      linked,
+      ...
+   }
+
+END
