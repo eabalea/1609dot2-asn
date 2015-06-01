@@ -25,7 +25,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   CrlSsp::= SEQUENCE {
       version         Uint8(1),
       cracaType       CracaType,
-      crls            SEQUENCE OF PermissibleCrls,
+      crls            SequenceOfPermissibleCrls,
       ...
   }
 
@@ -35,6 +35,8 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
       type            CrlType,
       crlSeries       SEQUENCE OF CrlSeries
   }
+
+  SequenceOfPermissibleCrls ::= SEQUENCE OF PermissibleCrls
 
   CrlType::= ENUMERATED {
       hashed,

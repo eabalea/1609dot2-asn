@@ -21,8 +21,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     standards-association-numbered-series-standards(2) wave-stds(1609)  
     dot2(2) base(1) base-types(2)}
 
-  HashCrlContents,
-  LinkedCrlContents
+  CrlContents
 FROM IEEE1609dot2CrlBaseTypes {iso(1) identified-organization(3) ieee(111) 
     standards-association-numbered-series-standards(2) wave-stds(1609)  
     dot2(2) crl(3) base-types(1)}
@@ -38,7 +37,7 @@ SecuredCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
         payload (WITH COMPONENTS {..., 
           data (WITH COMPONENTS {...,
              content (WITH COMPONENTS {
-                unsecuredData (CONTAINING HashCrlContents)
+                unsecuredData (CONTAINING CrlContents)
             })
           })
         }),
@@ -50,33 +49,6 @@ SecuredCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
           missingCertIdentifier ABSENT,
           missingCrlIdentifier ABSENT,
           encryptionKey ABSENT
-        })
-      })
-    })
-  })
-})
-
-SecuredLinkedCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {..., 
-  content (WITH COMPONENTS {..., 
-    signedData  (WITH COMPONENTS {..., 
-      tbsData (WITH COMPONENTS {..., 
-        payload (WITH COMPONENTS {..., 
-          data (WITH COMPONENTS {...,
-             content (WITH COMPONENTS {
-                unsecuredData (CONTAINING LinkedCrlContents)
-            })
-          })
-        }),
-        headerInfo (WITH COMPONENTS {..., 
-          psid (CrlPsid),
-          generationTime ABSENT,
-          expiryTime ABSENT,
-          generationLocation ABSENT,
-          missingCertIdentifier ABSENT,
-          missingCrlIdentifier ABSENT,
-          encryptionKey (WITH COMPONENTS {
-            public
-          }) PRESENT
         })
       })
     })

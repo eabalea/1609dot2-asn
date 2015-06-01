@@ -53,20 +53,13 @@ CrlContents ::= SEQUENCE {
     issueDate          Time32,   
     nextCrl            Time32,  
     typeSpecific       CHOICE {
-        tbsHashCrl           ToBeSignedHashIdCrl,            
-        tbsLinkedCrl         ToBeSignedLinkageValueCrl,
+        fullHashCrl          ToBeSignedHashIdCrl,            
+        deltaHashCrl         ToBeSignedHashIdCrl,            
+        fullLinkedCrl        ToBeSignedLinkageValueCrl,
+        deltaLinkedCrl       ToBeSignedLinkageValueCrl,
         ...
     }
 }    
-
-LinkedCrlContents ::= CrlContents (WITH COMPONENTS { ...,
-    typeSpecific(WITH COMPONENTS {tbsLinkedCrl})
-})
-
-
-HashCrlContents ::= CrlContents (WITH COMPONENTS { ...,
-    typeSpecific(WITH COMPONENTS {tbsHashCrl})
-})
 
 ToBeSignedHashIdCrl ::= SEQUENCE {  
     crlSerial         Uint32,
