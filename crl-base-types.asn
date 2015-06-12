@@ -25,6 +25,7 @@ IMPORTS
   LinkageSeed,
   Opaque,
   PKAlgorithm,
+  Psid,
   Signature,
   ThreeDLocation,
   Time32,
@@ -52,6 +53,7 @@ CrlContents ::= SEQUENCE {
     cracaId            HashedId8,
     issueDate          Time32,   
     nextCrl            Time32,  
+    priorityInfo       CrlPriorityInfo,
     typeSpecific       CHOICE {
         fullHashCrl          ToBeSignedHashIdCrl,            
         deltaHashCrl         ToBeSignedHashIdCrl,            
@@ -61,6 +63,12 @@ CrlContents ::= SEQUENCE {
     }
 }    
 
+CrlPriorityInfo ::= SEQUENCE {  
+    priority          Uint8 OPTIONAL,
+    ...
+}
+
+
 ToBeSignedHashIdCrl ::= SEQUENCE {  
     crlSerial         Uint32,
     entries           SequenceOfHashBasedRevocationInfo,
@@ -68,27 +76,30 @@ ToBeSignedHashIdCrl ::= SEQUENCE {
 }
 
 HashBasedRevocationInfo ::= SEQUENCE {
-            id         HashedId10,
-            expiry     Time32
+    id         HashedId10,
+    expiry     Time32
 }
 
 SequenceOfHashBasedRevocationInfo ::= 
     SEQUENCE OF HashBasedRevocationInfo
 
+
 ToBeSignedLinkageValueCrl ::= SEQUENCE {  
     iValue             IValue,
     indexWithinI       Uint8,
-    pseudonyms         SequenceOfJMaxGroup OPTIONAL,
+    individual         SequenceOfJMaxGroup OPTIONAL,
     groups             SequenceOfGroupCrlEntry OPTIONAL,
     ...
-}
-(WITH COMPONENTS {..., pseudonyms PRESENT} |
+} 
+(WITH COMPONENTS {..., individual PRESENT} |
  WITH COMPONENTS {..., groups PRESENT})
+
 
 JMaxGroup ::= SEQUENCE {
     jmax              Uint8,
-    contents          SequenceOfLAGroup
+    contents          SEQUENCE OF LAGroup
 }
+
 
 SequenceOfJMaxGroup ::= SEQUENCE OF JMaxGroup
 
@@ -108,8 +119,8 @@ IMaxGroup ::= SEQUENCE {
 SequenceOfIMaxGroup ::= SEQUENCE OF IMaxGroup
 
 IndividualRevocation ::= SEQUENCE { 
-    linkageSeed1    LinkageSeed,
-    linkageSeed2    LinkageSeed
+    linkage-seed1    LinkageSeed,
+    linkage-seed2    LinkageSeed
 }
 
 SequenceOfIndividualRevocation ::= SEQUENCE OF IndividualRevocation

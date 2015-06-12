@@ -110,7 +110,6 @@ GeographicRegion ::=
 
   SequenceOfIdentifiedRegion ::= SEQUENCE OF IdentifiedRegion
 
-
   ThreeDLocation ::=
         SEQUENCE  { latitude        Latitude,
                     longitude       Longitude,
@@ -236,22 +235,29 @@ GeographicRegion ::=
   -- ------------------------------------------------------------------
 
 
-  Psid ::= INTEGER (0..MAX)
-
   PsidSsp ::= SEQUENCE {
       psid                  Psid,
-      ssp                   Ssp OPTIONAL
+      ssp                   ServiceSpecificPermissions OPTIONAL
   }
 
-  Ssp ::= CHOICE {
+  SequenceOfPsidSsp ::= SEQUENCE OF PsidSsp
+
+  Psid ::= INTEGER (0..MAX)
+
+  SequenceOfPsid ::= SEQUENCE OF Psid
+
+  ServiceSpecificPermissions ::= CHOICE {
       opaque              OCTET STRING (SIZE(0..MAX)),
       ... -- will define Structured SSP here
   }
+
 
   PsidSspRange ::= SEQUENCE {
       psid                Psid,
       sspRange            SspRange OPTIONAL
   }
+
+  SequenceOfPsidSspRange ::= SEQUENCE OF PsidSspRange
 
   SspRange ::= CHOICE {
       opaque              SequenceOfOctetString,
@@ -259,10 +265,6 @@ GeographicRegion ::=
       ... -- will define Structured SSP Range here
   }
     
-
-  SequenceOfPsid ::= SEQUENCE OF Psid
-  SequenceOfPsidSsp::= SEQUENCE OF PsidSsp
-  SequenceOfPsidSspRange ::= SEQUENCE OF PsidSspRange
   SequenceOfOctetString ::= SEQUENCE OF OCTET STRING
 
 
@@ -290,7 +292,8 @@ GeographicRegion ::=
     jValue  OCTET STRING (SIZE(3)),
     value   OCTET STRING (SIZE(10))
   }
-  LinkageSeed ::= OCTET STRING (SIZE(16))
   LaId ::= OCTET STRING (SIZE(2)) 
+  LinkageSeed ::= OCTET STRING (SIZE(16))
+
 
 END

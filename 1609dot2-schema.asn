@@ -36,7 +36,7 @@ IMPORTS
   SequenceOfPsidSsp,
   SequenceOfPsidSspRange,
   Signature,
-  Ssp,
+  ServiceSpecificPermissions,
   SubjectAssurance,
   SymmetricEncryptionKey,
   ThreeDLocation,
