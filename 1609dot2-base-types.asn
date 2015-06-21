@@ -25,6 +25,10 @@ EXPORTS ALL;
   Uint32 ::= INTEGER (0..4294967295)--<LONGLONG>-- -- (hex)             ff ff ff ff
   Uint64 ::= INTEGER (0..18446744073709551615) -- (hex) ff ff ff ff ff ff ff ff
 
+  SequenceOfUint3  ::= SEQUENCE OF Uint3
+  SequenceOfUint8  ::= SEQUENCE OF Uint8
+  SequenceOfUint16 ::= SEQUENCE OF Uint16
+
   -- ------------------------------------------------------------------
   -- 
   -- OCTET STRING types
@@ -104,11 +108,33 @@ GeographicRegion ::=
                   }
 
   IdentifiedRegion ::= 
-        SEQUENCE  { unStatsCountryCode   Uint16,
-                    local                Uint32 DEFAULT 0
-                  }
+        CHOICE    { countryOnly           CountryOnly,
+                    countryAndRegions     CountryAndRegions,
+                    countryAndSubregions  CountryAndSubregions,
+                    ...
+        }
 
   SequenceOfIdentifiedRegion ::= SEQUENCE OF IdentifiedRegion
+
+  CountryOnly ::= Uint16
+
+  CountryAndRegions ::= SEQUENCE {
+        countryOnly    CountryOnly,
+        regions        SequenceOfUint8
+  }
+
+  CountryAndSubregions ::= SEQUENCE {
+        country              CountryOnly,
+        regionAndSubregions  SequenceOfRegionAndSubregions
+  }
+
+  RegionAndSubregions ::= SEQUENCE {
+        region             Uint8,
+        subregions         SequenceOfUint16
+  }
+
+  SequenceOfRegionAndSubregions ::= SEQUENCE OF RegionAndSubregions
+
 
   ThreeDLocation ::=
         SEQUENCE  { latitude        Latitude,
