@@ -301,6 +301,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
         linkageData             LinkageData,
         name                    Hostname,
         binaryId                OCTET STRING(SIZE(1..64)),
+        none                    NULL,
         ...
     }
 
