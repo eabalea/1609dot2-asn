@@ -100,7 +100,7 @@ GeographicRegion ::=
 
   SequenceOfRectangularRegion ::= SEQUENCE OF RectangularRegion
 
-  PolygonalRegion ::= SEQUENCE SIZE(3..12) OF TwoDLocation
+  PolygonalRegion ::= SEQUENCE SIZE(3..MAX) OF TwoDLocation
 
   TwoDLocation ::=
         SEQUENCE  { latitude      Latitude,
@@ -147,21 +147,23 @@ GeographicRegion ::=
   Elevation ::= ElevInt
 
   NinetyDegreeInt ::= INTEGER {
-		min 		(-900000000),
+		min 		(-899999999),
 		max 		(900000000),
 		unknown 	(900000001)
   } (-900000000..900000001)
 
-  KnownLatitude ::= NinetyDegreeInt (min..max) -- Minus 90deg to +90deg in microdegree intervals
+  KnownLatitude ::= NinetyDegreeInt (min..max) 
+    -- Minus 90deg to +90deg in one-tenth microdegree intervals
   UnknownLatitude ::= NinetyDegreeInt (unknown)
   
   OneEightyDegreeInt ::= INTEGER {
-		min      	(-1800000000),
+		min      	(-1799999999),
 		max      	(1800000000),
 		unknown  	(1800000001)
   } (-1800000000..1800000001)
 
-  KnownLongitude ::= OneEightyDegreeInt (min..max) -- Minus 180deg to +180deg in microdegree intervals
+  KnownLongitude ::= OneEightyDegreeInt (min..max) 
+    -- Minus 180deg to +180deg in one-tenth microdegree intervals
   UnknownLongitude ::= OneEightyDegreeInt (unknown)
   
   ElevInt ::= INTEGER  {

@@ -46,7 +46,7 @@ SecuredCrl ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
           generationTime ABSENT,
           expiryTime ABSENT,
           generationLocation ABSENT,
-          missingCertIdentifier ABSENT,
+          certLearningRequest ABSENT,
           missingCrlIdentifier ABSENT,
           encryptionKey ABSENT
         })

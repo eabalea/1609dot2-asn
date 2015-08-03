@@ -65,7 +65,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
   SignedDataPayload ::= SEQUENCE  { 
       data             Ieee1609Dot2Data OPTIONAL,
-      extDataHash      OCTET STRING (SIZE (32)) OPTIONAL,
+      extDataHash      HashedData OPTIONAL,
       ...
   }
       (WITH COMPONENTS {..., data PRESENT} |
@@ -105,13 +105,17 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     headerInfo      HeaderInfo
   }
 
+  HashedData::= CHOICE { 
+      sha256HashedData  OCTET STRING (SIZE(32)),
+      ...
+  }
 
   HeaderInfo ::= SEQUENCE  { 
       psid                   Psid,
       generationTime         Time64WithStandardDeviation OPTIONAL,
       expiryTime             Time64  OPTIONAL,
       generationLocation     ThreeDLocation OPTIONAL,
-      missingCertIdentifier  HashedId3 OPTIONAL,
+      certLearningRequest    HashedId3 OPTIONAL,
       missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
       encryptionKey          EncryptionKey OPTIONAL,
       ...
@@ -139,7 +143,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
             generationTime PRESENT,
             expiryTime ABSENT,
             generationLocation ABSENT,
-            missingCertIdentifier ABSENT,
+            certLearningRequest ABSENT,
             missingCrlIdentifier ABSENT,
             encryptionKey ABSENT
           })
@@ -173,8 +177,9 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   --   allows misbinding attacks: it is included in these structures
   --   specifically to enable certificate response encryption from the PCA
   --   to the end-entity device.
-  RecipientInfo ::=
-        CHOICE    { symmRecipInfo       SymmRecipientInfo,
+  RecipientInfo ::= CHOICE    { 
+                    pskRecipInfo        PreSharedKeyRecipientInfo,
+                    symmRecipInfo       SymmRecipientInfo,
                     certRecipInfo       PKRecipientInfo, 
                     signedDataRecipInfo PKRecipientInfo, 
                     rekRecipInfo        PKRecipientInfo 
@@ -182,7 +187,12 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
          
   SequenceOfRecipientInfo ::= SEQUENCE OF RecipientInfo
 
-  SymmRecipientInfo ::= HashedId8
+  PreSharedKeyRecipientInfo ::= HashedId8
+
+  SymmRecipientInfo ::= SEQUENCE  { 
+    recipientId        HashedId8, 
+    encKey             SymmetricCiphertext
+  }
 
   PKRecipientInfo ::= SEQUENCE  { 
     recipientId        HashedId8, 
@@ -306,7 +316,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     }
 
   LinkageData ::= 
-        SEQUENCE  { iValue                IValue,
+        SEQUENCE  { iCert                 IValue,
                     linkage-value         LinkageValue, 
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
