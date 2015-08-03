@@ -290,6 +290,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
   ToBeSignedCertificate ::= SEQUENCE  { 
     id                     CertificateId,
+    cracaId                HashedId3,
     crlSeries              CrlSeries,
     validityPeriod         ValidityPeriod,
     region                 GeographicRegion OPTIONAL,
