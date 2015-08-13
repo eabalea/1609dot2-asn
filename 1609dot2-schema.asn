@@ -322,13 +322,13 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
+  EndEntityType ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
 
   PsidGroupPermissions ::= SEQUENCE {
       subjectPsids       SubjectPsids,
       minChainDepth      INTEGER DEFAULT 1, -- 0 for enrolment certs
       chainDepthRange    INTEGER DEFAULT 0, -- max depth = min + range
-      certType           CertIssuancePermissions DEFAULT {app}
+      eeType             EndEntityType DEFAULT {app}
   }
 
   SequenceOfPsidGroupPermissions ::= SEQUENCE OF PsidGroupPermissions
