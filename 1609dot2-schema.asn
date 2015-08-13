@@ -111,7 +111,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
       generationTime         Time64WithStandardDeviation OPTIONAL,
       expiryTime             Time64  OPTIONAL,
       generationLocation     ThreeDLocation OPTIONAL,
-      missingCertIdentifier  HashedId3 OPTIONAL,
+      certLearningRequest    HashedId3 OPTIONAL,
       missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
       encryptionKey          EncryptionKey OPTIONAL,
       ...
@@ -139,7 +139,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
             generationTime PRESENT,
             expiryTime ABSENT,
             generationLocation ABSENT,
-            missingCertIdentifier ABSENT,
+            certLearningRequest ABSENT,
             missingCrlIdentifier ABSENT,
             encryptionKey ABSENT
           })
@@ -311,7 +311,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) }
+  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
 
   PsidGroupPermissions ::= SEQUENCE {
       subjectPsids       SubjectPsids,
