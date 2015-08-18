@@ -31,17 +31,8 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
   CracaType ::= ENUMERATED {self, issuer}
       
-  PermissibleCrls ::= SEQUENCE {
-      type            CrlType,
-      crlSeries       SEQUENCE OF CrlSeries
-  }
+  PermissibleCrls ::= SEQUENCE OF CrlSeries
 
   SequenceOfPermissibleCrls ::= SEQUENCE OF PermissibleCrls
-
-  CrlType::= ENUMERATED {
-      hashed,
-      linked,
-      ...
-   }
 
 END

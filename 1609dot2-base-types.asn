@@ -314,7 +314,7 @@ GeographicRegion ::=
   -- ------------------------------------------------------------------
 
   IValue ::= Uint16
-  Hostname ::= UTF8String (SIZE(0..256))
+  Hostname ::= UTF8String (SIZE(0..255))
   LinkageValue ::= OCTET STRING (SIZE(9))
   GroupLinkageValue ::= SEQUENCE {
     jValue  OCTET STRING (SIZE(3)),

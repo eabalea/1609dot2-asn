@@ -78,6 +78,9 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     content            Ieee1609Dot2Content
   }
 
+  TestIeee1609Dot2Data ::= Ieee1609Dot2Data 
+
+
   Ieee1609Dot2Content ::=  CHOICE  { 
     unsecuredData             Opaque, 
     signedData                SignedData,
@@ -322,7 +325,9 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) }
+  CertIssuancePermissions ::= BIT STRING {app (0), enrol (1) } (SIZE(8))
+
+TestCertIssuancePermissions ::= CertIssuancePermissions
 
   PsidGroupPermissions ::= SEQUENCE {
       subjectPsids       SubjectPsids,

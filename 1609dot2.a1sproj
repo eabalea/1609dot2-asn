@@ -1,4 +1,4 @@
-<OssGuiProject version="2.0" product="ASN.1 Studio" productVersion="7.1">
+<OssGuiProject product="ASN.1 Studio" version="2.0" productVersion="7.1">
  <Asn1Files>
   <File>1609dot2-base-types.asn</File>
   <File>1609dot2-schema.asn</File>
@@ -9,7 +9,9 @@
   <File>crl-protocol.asn</File>
  </Asn1Files>
  <CompilerSettings/>
- <EncodingFiles/>
+ <EncodingFiles>
+  <File encRule="ASN.1 Value Notation">Sample-BSM-Cert.txt</File>
+ </EncodingFiles>
  <Settings>
   <Setting name="-coer"/>
   <Setting present="false" name="-noRelaxedMode"/>
