@@ -22,7 +22,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
       ...
   }
 
-  CracaType ::= ENUMERATED {self, issuer}
+  CracaType ::= ENUMERATED {isCraca, issuerIsCraca}
       
   PermissibleCrls ::= SEQUENCE OF CrlSeries
 

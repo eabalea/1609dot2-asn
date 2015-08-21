@@ -147,7 +147,7 @@ GeographicRegion ::=
   Elevation ::= ElevInt
 
   NinetyDegreeInt ::= INTEGER {
-		min 		(-899999999),
+		min 		(-900000000),
 		max 		(900000000),
 		unknown 	(900000001)
   } (-900000000..900000001)
@@ -160,7 +160,7 @@ GeographicRegion ::=
 		min      	(-1799999999),
 		max      	(1800000000),
 		unknown  	(1800000001)
-  } (-1800000000..1800000001)
+  } (-1799999999..1800000001)
 
   KnownLongitude ::= OneEightyDegreeInt (min..max) 
     -- Minus 180deg to +180deg in one-tenth microdegree intervals
@@ -320,6 +320,7 @@ GeographicRegion ::=
     jValue  OCTET STRING (SIZE(3)),
     value   OCTET STRING (SIZE(10))
   }
+
   LaId ::= OCTET STRING (SIZE(2)) 
   LinkageSeed ::= OCTET STRING (SIZE(16))
 
