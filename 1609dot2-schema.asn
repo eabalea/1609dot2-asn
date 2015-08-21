@@ -21,8 +21,8 @@ IMPORTS
   GroupLinkageValue,
   HashAlgorithm,
   HashedId3,
-  HashedId32,
   HashedId8,
+  HashedId32,
   Hostname,
   IValue,
   LinkageValue,
@@ -35,8 +35,8 @@ IMPORTS
   PublicVerificationKey,
   SequenceOfPsidSsp,
   SequenceOfPsidSspRange,
-  Signature,
   ServiceSpecificPermissions,
+  Signature,
   SubjectAssurance,
   SymmetricEncryptionKey,
   ThreeDLocation,
@@ -44,16 +44,14 @@ IMPORTS
   Time64WithStandardDeviation,
   Uint16, 
   Uint3,
-  Uint32,
   Uint8,
+  Uint32,
   ValidityPeriod
 FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
     standards-association-numbered-series-standards(2) wave-stds(1609)  
     dot2(2) base(1) base-types(2)}
 
 ;
-
-  TestPsidGroupPermissions ::= PsidGroupPermissions
 
 
 -- 
@@ -63,6 +61,9 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 -- 
 --*********************************************************************  
 
+  -- this structure belongs later in the file but putting it here avoids
+  -- compiler errors with certain tools
+  
   SignedDataPayload ::= SEQUENCE  { 
       data             Ieee1609Dot2Data OPTIONAL,
       extDataHash      HashedData OPTIONAL,
@@ -72,6 +73,8 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
        WITH COMPONENTS {..., extDataHash PRESENT})
        -- must include at least one element
 
+
+  -- this is the top-level structure
 
   Ieee1609Dot2Data ::= SEQUENCE  { 
     protocolVersion    Uint8(3),
@@ -83,7 +86,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     unsecuredData             Opaque, 
     signedData                SignedData,
     encryptedData             EncryptedData,
-    signedCertificateRequest  SignedCertificateRequest,
+    -- signedCertificateRequest  SignedCertificateRequest,
     ...
   }
 
@@ -123,12 +126,11 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   }
 
 
-  -- NEW, designed to support epidemic distribution in 1609.2 setting.
+  -- designed to support epidemic distribution in 1609.2 setting.
   MissingCrlIdentifier ::=                  
-        SEQUENCE  { caId            HashedId8,
-                    crlSeries       Uint32,
-                    crlSerial       Uint32,
-                    chunkId         Uint16
+        SEQUENCE  { cracaId         HashedId3,
+                    crlSeries       CrlSeries,
+                    ...
                   }
 
   -- New, designed to support aggregated signatures
@@ -165,19 +167,6 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
                     ciphertext     SymmetricCiphertext
                   }
 
-  -- The three different PKRecipientInfo types are to let the receiver know how
-  -- to look up the decryption key:
-  -- * certRecipInfo: The data was encrypted using the encryption key in a cert.
-  --   This field contains the HashedId8 of the cert.
-  -- * signedDataRecipInfo: The data was encrypted using the response encryption
-  --   key from a SignedData. This field contains the HashedId8 of the
-  --   Ieee1609Dot2Data containing the SignedData containing the encryption key.
-  -- * rekRecipInfo: The data was encrypted using a response encryption key. The
-  --   structure contains the HashedId8 of the response encryption key. This
-  --   should only be used if the SignedData is not available as it potentially
-  --   allows misbinding attacks: it is included in these structures
-  --   specifically to enable certificate response encryption from the PCA
-  --   to the end-entity device.
   RecipientInfo ::= CHOICE    { 
                     pskRecipInfo        PreSharedKeyRecipientInfo,
                     symmRecipInfo       SymmRecipientInfo,
@@ -219,26 +208,6 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
 --********************************************************************** 
 -- 
---  Certificate Request
--- 
---**********************************************************************  
-
-  SignedCertificateRequest ::= SEQUENCE  { 
-    hashId          HashAlgorithm,
-    tbsRequest      ToBeSignedCertificateRequest,
-    signer          SignerIdentifier,
-    signature       Signature
-  }
-
-  ToBeSignedCertificateRequest ::= SEQUENCE {
-    data            OCTET STRING,
-    encryptionKey   EncryptionKey
-  }
-
-
-
---********************************************************************** 
--- 
 --  Certificates and other security management data structures
 --  Based more on 103 097 than 1609.2 but with WSA certs and implicit certs
 --  supported
@@ -254,7 +223,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   SequenceOfCertificate ::= SEQUENCE OF Certificate
 
   CertificateBase ::=
-        SEQUENCE  { version                 Uint8(1),
+        SEQUENCE  { version                 Uint8(3),
                     type                    CertificateType,
                     issuer                  IssuerIdentifier,
                     toBeSigned              ToBeSignedCertificate,
@@ -329,7 +298,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
 
   PsidGroupPermissions ::= SEQUENCE {
-      subjectPsids       SubjectPsids,
+      appPermissions     SubjectPermissions,
       minChainDepth      INTEGER DEFAULT 1, -- 0 for enrolment certs
       chainDepthRange    INTEGER DEFAULT 0, -- max depth = min + range
       eeType             EndEntityType DEFAULT {app}
@@ -337,12 +306,11 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
   SequenceOfPsidGroupPermissions ::= SEQUENCE OF PsidGroupPermissions
 
-  SubjectPsids ::= CHOICE {
+  SubjectPermissions ::= CHOICE {
           explicit        SequenceOfPsidSspRange,
           all             NULL,
           ...
   }
-
 
   VerificationKeyIndicator ::= CHOICE {
         verificationKey         PublicVerificationKey,
