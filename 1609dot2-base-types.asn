@@ -165,17 +165,8 @@ GeographicRegion ::=
   KnownLongitude ::= OneEightyDegreeInt (min..max) 
     -- Minus 180deg to +180deg in one-tenth microdegree intervals
   UnknownLongitude ::= OneEightyDegreeInt (unknown)
-  
-  ElevInt ::= INTEGER  {
-		max  		(61439),
-		min  		(-4095),
-		unknown		(-4096)
-  } (-4096..61439)
 
-  MaxElev ::= ElevInt (max)
-  MinElev ::= ElevInt (min)
-  KnownElev ::= ElevInt (min..max)  -- Minus 409.5m to 6143.9m in 0.1m intervals
-  UnknownElev ::= ElevInt (unknown)
+  ElevInt ::= Uint16 -- Range is from -4096 to 61439 in units of one-tenth of a meter
 
   -- ------------------------------------------------------------------
   -- 
