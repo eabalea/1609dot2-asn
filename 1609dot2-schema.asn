@@ -81,18 +81,19 @@ FROM IEEE1609dot2ScmsProtocol
 
 
   -- this is the top-level structure
-
   Ieee1609Dot2Data ::= SEQUENCE  { 
     protocolVersion    Uint8(3),
     content            Ieee1609Dot2Content
   }
 
 
+TestIeee1609Dot2Data::=Ieee1609Dot2Data 
+
   Ieee1609Dot2Content ::=  CHOICE  { 
     unsecuredData             Opaque, 
     signedData                SignedData,
     encryptedData             EncryptedData,
-    signedCertificateRequest  SignedCertificateRequest,
+    signedCertificateRequest  Opaque,
     ...
   }
 
