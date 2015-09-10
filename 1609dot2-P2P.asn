@@ -23,7 +23,7 @@ FROM IEEE1609dot2 {iso(1) identified-organization(3) ieee(111)
 ;
 
 Ieee1609dot2Peer2PeerPDU ::= SEQUENCE {
-  version            INTEGER(1),
+  version            Uint8(1),
   content            CHOICE {
     caCerts            CaCertP2pPDU,
     crl                CrlP2pPDU,
