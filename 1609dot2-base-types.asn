@@ -25,7 +25,6 @@ EXPORTS ALL;
   Uint32 ::= INTEGER (0..4294967295)--<LONGLONG>-- -- (hex)             ff ff ff ff
   Uint64 ::= INTEGER (0..18446744073709551615) -- (hex) ff ff ff ff ff ff ff ff
 
-  SequenceOfUint3  ::= SEQUENCE OF Uint3
   SequenceOfUint8  ::= SEQUENCE OF Uint8
   SequenceOfUint16 ::= SEQUENCE OF Uint16
 
@@ -53,10 +52,6 @@ EXPORTS ALL;
 
   Time32 ::= Uint32
   Time64 ::= Uint64
-  Time64WithStandardDeviation ::=
-        SEQUENCE  { time        Time64,
-                    logStdDev   Uint8
-                  }
 
   ValidityPeriod ::= SEQUENCE {
       start          Time32,
@@ -110,7 +105,7 @@ GeographicRegion ::=
   IdentifiedRegion ::= 
         CHOICE    { countryOnly           CountryOnly,
                     countryAndRegions     CountryAndRegions,
-                    countryAndSubregions  CountryAndSubregions,
+                    countryAndSubregion   CountryAndSubregions,
                     ...
         }
 
@@ -124,7 +119,7 @@ GeographicRegion ::=
   }
 
   CountryAndSubregions ::= SEQUENCE {
-        country              CountryOnly,
+        country             CountryOnly,
         regionAndSubregions  SequenceOfRegionAndSubregions
   }
 
@@ -134,7 +129,6 @@ GeographicRegion ::=
   }
 
   SequenceOfRegionAndSubregions ::= SEQUENCE OF RegionAndSubregions
-
 
   ThreeDLocation ::=
         SEQUENCE  { latitude        Latitude,
@@ -152,8 +146,7 @@ GeographicRegion ::=
 		unknown 	(900000001)
   } (-900000000..900000001)
 
-  KnownLatitude ::= NinetyDegreeInt (min..max) 
-    -- Minus 90deg to +90deg in one-tenth microdegree intervals
+  KnownLatitude ::= NinetyDegreeInt (min..max) -- Minus 90deg to +90deg in microdegree intervals
   UnknownLatitude ::= NinetyDegreeInt (unknown)
   
   OneEightyDegreeInt ::= INTEGER {
@@ -162,10 +155,9 @@ GeographicRegion ::=
 		unknown  	(1800000001)
   } (-1799999999..1800000001)
 
-  KnownLongitude ::= OneEightyDegreeInt (min..max) 
-    -- Minus 180deg to +180deg in one-tenth microdegree intervals
+  KnownLongitude ::= OneEightyDegreeInt (min..max)
   UnknownLongitude ::= OneEightyDegreeInt (unknown)
-
+  
   ElevInt ::= Uint16 -- Range is from -4096 to 61439 in units of one-tenth of a meter
 
   -- ------------------------------------------------------------------
@@ -175,19 +167,17 @@ GeographicRegion ::=
   -- ------------------------------------------------------------------
 
   Signature ::=
-        CHOICE  { ecdsa256Signature EcdsaNistP256Signature,
+        CHOICE  { ecdsaNistP256Signature        EcdsaP256Signature,
+                  ecdsaBrainpoolP256r1Signature EcdsaP256Signature,
                   ...
                 }
-  EcdsaNistP256Signature ::= -- note: alternative is to import from X9.62 / SEC 1
-        SEQUENCE {  r     EccNistP256CurvePoint,
+
+  EcdsaP256Signature ::= 
+        SEQUENCE {  r     EccP256CurvePoint,
                     s     OCTET STRING (SIZE (32))
                  }
 
-  EccCurvePoint ::=
-        CHOICE   {  ecc256           EccNistP256CurvePoint,
-                    ...
-                 }
-  EccNistP256CurvePoint ::= -- note: alternative is to import from X9.62 / SEC 1
+  EccP256CurvePoint ::=
         CHOICE    { x-only           OCTET STRING (SIZE (32)),
                     fill             NULL,  -- consistency with 1363 / X9.62
                     compressed-y-0   OCTET STRING (SIZE (32)),
@@ -197,14 +187,6 @@ GeographicRegion ::=
                                        y OCTET STRING (SIZE (32))
                                      }
                   }
-
-  EccNistP256CurvePrivateKeyReconstruction ::=  OCTET STRING (SIZE (32))
-
-  PKAlgorithm ::= ENUMERATED  { 
-      ecdsaNistp256WithSha256,
-      eciesNistp256,
-      ...
-  } 
 
   SymmAlgorithm ::= ENUMERATED  { 
       aes128Ccm,
@@ -216,8 +198,8 @@ GeographicRegion ::=
       ...
   }
 
-  EciesNistP256EncryptedKey ::=
-        SEQUENCE  { v               EccNistP256CurvePoint,
+  EciesP256EncryptedKey ::=
+        SEQUENCE  { v               EccP256CurvePoint,
                     c               OCTET STRING (SIZE (16)),
                     t               OCTET STRING (SIZE (16))
                   }
@@ -233,12 +215,14 @@ GeographicRegion ::=
       }
 
   BasePublicEncryptionKey ::= CHOICE { 
-          eciesNistP256      EccNistP256CurvePoint,
+          eciesNistP256             EccP256CurvePoint,
+          eciesBrainpoolP256r1      EccP256CurvePoint,
           ...
       }
 
   PublicVerificationKey ::= CHOICE  { 
-      ecdsaNistP256             EccNistP256CurvePoint,
+      ecdsaNistP256             EccP256CurvePoint,
+      ecdsaBrainpoolP256r1      EccP256CurvePoint,
       ...
   }
 
@@ -284,7 +268,8 @@ GeographicRegion ::=
       ... -- will define Structured SSP Range here
   }
     
-  SequenceOfOctetString ::= SEQUENCE OF OCTET STRING
+  SequenceOfOctetString ::= SEQUENCE (SIZE (0..MAX)) OF 
+    OCTET STRING (SIZE(0..MAX))
 
 
   -- ------------------------------------------------------------------
@@ -311,9 +296,9 @@ GeographicRegion ::=
     jValue  OCTET STRING (SIZE(3)),
     value   OCTET STRING (SIZE(10))
   }
-
+  
   LaId ::= OCTET STRING (SIZE(2)) 
   LinkageSeed ::= OCTET STRING (SIZE(16))
 
-
 END
+

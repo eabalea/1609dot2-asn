@@ -14,8 +14,8 @@ EXPORTS ALL;
 
 IMPORTS 
   CrlSeries,
-  EccNistP256CurvePoint,
-  EciesNistP256EncryptedKey,
+  EccP256CurvePoint,
+  EciesP256EncryptedKey,
   EncryptionKey,
   GeographicRegion,
   GroupLinkageValue,
@@ -27,7 +27,6 @@ IMPORTS
   IValue,
   LinkageValue,
   Opaque,
-  PKAlgorithm,
   Psid,
   PsidSsp,
   PsidSspRange,
@@ -41,24 +40,16 @@ IMPORTS
   SymmetricEncryptionKey,
   ThreeDLocation,
   Time64,
-  Time64WithStandardDeviation,
-  Uint16, 
   Uint3,
   Uint8,
+  Uint16, 
   Uint32,
   ValidityPeriod
 FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) 
     standards-association-numbered-series-standards(2) wave-stds(1609)  
     dot2(2) base(1) base-types(2)}
 
-  SignedCertificateRequest
-FROM IEEE1609dot2ScmsProtocol 
-    {iso(1) identified-organization(3) ieee(111) 
-     standards-association-numbered-series-standards(2) wave-stds(1609)  
-     dot2(2) scms(2) interfaces(1) protocol(1)}
-
 ;
-
 
 -- 
 --********************************************************************* 
@@ -69,31 +60,24 @@ FROM IEEE1609dot2ScmsProtocol
 
   -- this structure belongs later in the file but putting it here avoids
   -- compiler errors with certain tools
-  
   SignedDataPayload ::= SEQUENCE  { 
-      data             Ieee1609Dot2Data OPTIONAL,
-      extDataHash      HashedData OPTIONAL,
+      data              Ieee1609Dot2Data OPTIONAL,
+      extDataHash       HashedData OPTIONAL,
       ...
   }
       (WITH COMPONENTS {..., data PRESENT} |
        WITH COMPONENTS {..., extDataHash PRESENT})
-       -- must include at least one element
 
-
-  -- this is the top-level structure
-  Ieee1609Dot2Data ::= SEQUENCE  { 
+  Ieee1609Dot2Data ::= SEQUENCE {
     protocolVersion    Uint8(3),
     content            Ieee1609Dot2Content
   }
 
-
-TestIeee1609Dot2Data::=Ieee1609Dot2Data 
-
   Ieee1609Dot2Content ::=  CHOICE  { 
-    unsecuredData             Opaque, 
-    signedData                SignedData,
-    encryptedData             EncryptedData,
-    signedCertificateRequest  Opaque,
+    unsecuredData            Opaque, 
+    signedData               SignedData,
+    encryptedData            EncryptedData,
+    signedCertificateRequest Opaque,
     ...
   }
 
@@ -123,7 +107,7 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
 
   HeaderInfo ::= SEQUENCE  { 
       psid                   Psid,
-      generationTime         Time64WithStandardDeviation OPTIONAL,
+      generationTime         Time64 OPTIONAL,
       expiryTime             Time64  OPTIONAL,
       generationLocation     ThreeDLocation OPTIONAL,
       certLearningRequest    HashedId3 OPTIONAL,
@@ -132,15 +116,12 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
       ...
   }
 
-
-  -- designed to support epidemic distribution in 1609.2 setting.
   MissingCrlIdentifier ::=                  
         SEQUENCE  { cracaId         HashedId3,
                     crlSeries       CrlSeries,
                     ...
                   }
 
-  -- New, designed to support aggregated signatures
   Countersignature ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
     content (WITH COMPONENTS {..., 
       signedData  (WITH COMPONENTS {..., 
@@ -149,7 +130,7 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
             data ABSENT,
             extDataHash PRESENT
           }),
-          headerInfo (WITH COMPONENTS {..., 
+          headerInfo(WITH COMPONENTS {..., 
             generationTime PRESENT,
             expiryTime ABSENT,
             generationLocation ABSENT,
@@ -174,18 +155,17 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
                     ciphertext     SymmetricCiphertext
                   }
 
-  RecipientInfo ::= CHOICE    { 
-                    pskRecipInfo        PreSharedKeyRecipientInfo,
+  RecipientInfo ::=
+        CHOICE    { pskRecipInfo        PreSharedKeyRecipientInfo,
                     symmRecipInfo       SymmRecipientInfo,
                     certRecipInfo       PKRecipientInfo, 
                     signedDataRecipInfo PKRecipientInfo, 
                     rekRecipInfo        PKRecipientInfo 
                   }
-         
+
   SequenceOfRecipientInfo ::= SEQUENCE OF RecipientInfo
-
+         
   PreSharedKeyRecipientInfo ::= HashedId8
-
   SymmRecipientInfo ::= SEQUENCE  { 
     recipientId        HashedId8, 
     encKey             SymmetricCiphertext
@@ -197,10 +177,10 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
   }
 
   EncryptedDataEncryptionKey ::= CHOICE  { 
-       eciesNistp256   EciesNistP256EncryptedKey,
+       eciesNistP256          EciesP256EncryptedKey,
+       eciesBrainpoolP256r1   EciesP256EncryptedKey,
        ...
   }
-
   SymmetricCiphertext ::=
         CHOICE  { aes128ccm           AesCcmCiphertext,
                   ...
@@ -210,7 +190,6 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
         SEQUENCE  { nonce           OCTET STRING (SIZE (12)),
                     ccmCiphertext   Opaque -- 16 bytes longer than plaintext
                   }
-
 
 
 --********************************************************************** 
@@ -260,7 +239,7 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
   })
 
   IssuerIdentifier ::= CHOICE  { 
-    ecdsaNistP256AndDigest  HashedId8,
+    sha256AndDigest         HashedId8,
     self                    HashAlgorithm,
     ...
   }
@@ -299,10 +278,7 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
                     group-linkage-value   GroupLinkageValue OPTIONAL
                   }
          
-  
   EndEntityType ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
-
-
 
   PsidGroupPermissions ::= SEQUENCE {
       appPermissions     SubjectPermissions,
@@ -321,21 +297,11 @@ TestIeee1609Dot2Data::=Ieee1609Dot2Data
 
   VerificationKeyIndicator ::= CHOICE {
         verificationKey         PublicVerificationKey,
-        reconstructionValue     EccNistP256CurvePoint
+        reconstructionValue     EccP256CurvePoint,
+        ...
   }
 
 
   
---********************************************************************** 
--- Data Types required for internal processing of transmitted and received
--- data but which are not needed for transmitted messages.
---
---********************************************************************** 
-
-  PublicKeyReconstructionHashInput ::= -- Note, reverse order from 1609.2-2013
-        SEQUENCE  { subjectCertificate      Certificate,
-                    issuerHash              HashedId32
-                  }
-
-
 END
+
