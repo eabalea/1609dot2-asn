@@ -53,10 +53,6 @@ EXPORTS ALL;
 
   Time32 ::= Uint32
   Time64 ::= Uint64
-  Time64WithStandardDeviation ::=
-        SEQUENCE  { time        Time64,
-                    logStdDev   Uint8
-                  }
 
   ValidityPeriod ::= SEQUENCE {
       start          Time32,
@@ -147,7 +143,7 @@ GeographicRegion ::=
   Elevation ::= ElevInt
 
   NinetyDegreeInt ::= INTEGER {
-		min 		(-899999999),
+		min 		(-900000000),
 		max 		(900000000),
 		unknown 	(900000001)
   } (-900000000..900000001)
@@ -160,22 +156,13 @@ GeographicRegion ::=
 		min      	(-1799999999),
 		max      	(1800000000),
 		unknown  	(1800000001)
-  } (-1800000000..1800000001)
+  } (-1799999999..1800000001)
 
   KnownLongitude ::= OneEightyDegreeInt (min..max) 
     -- Minus 180deg to +180deg in one-tenth microdegree intervals
   UnknownLongitude ::= OneEightyDegreeInt (unknown)
-  
-  ElevInt ::= INTEGER  {
-		max  		(61439),
-		min  		(-4095),
-		unknown		(-4096)
-  } (-4096..61439)
 
-  MaxElev ::= ElevInt (max)
-  MinElev ::= ElevInt (min)
-  KnownElev ::= ElevInt (min..max)  -- Minus 409.5m to 6143.9m in 0.1m intervals
-  UnknownElev ::= ElevInt (unknown)
+  ElevInt ::= Uint16 -- Range is from -4096 to 61439 in units of one-tenth of a meter
 
   -- ------------------------------------------------------------------
   -- 
@@ -184,19 +171,17 @@ GeographicRegion ::=
   -- ------------------------------------------------------------------
 
   Signature ::=
-        CHOICE  { ecdsa256Signature EcdsaNistP256Signature,
+        CHOICE  { ecdsaNistP256Signature        EcdsaP256Signature,
+                  ecdsaBrainpoolP256r1Signature EcdsaP256Signature,
                   ...
                 }
-  EcdsaNistP256Signature ::= -- note: alternative is to import from X9.62 / SEC 1
-        SEQUENCE {  r     EccNistP256CurvePoint,
+
+  EcdsaP256Signature ::= 
+        SEQUENCE {  r     EccP256CurvePoint,
                     s     OCTET STRING (SIZE (32))
                  }
 
-  EccCurvePoint ::=
-        CHOICE   {  ecc256           EccNistP256CurvePoint,
-                    ...
-                 }
-  EccNistP256CurvePoint ::= -- note: alternative is to import from X9.62 / SEC 1
+  EccP256CurvePoint ::=
         CHOICE    { x-only           OCTET STRING (SIZE (32)),
                     fill             NULL,  -- consistency with 1363 / X9.62
                     compressed-y-0   OCTET STRING (SIZE (32)),
@@ -206,14 +191,6 @@ GeographicRegion ::=
                                        y OCTET STRING (SIZE (32))
                                      }
                   }
-
-  EccNistP256CurvePrivateKeyReconstruction ::=  OCTET STRING (SIZE (32))
-
-  PKAlgorithm ::= ENUMERATED  { 
-      ecdsaNistp256WithSha256,
-      eciesNistp256,
-      ...
-  } 
 
   SymmAlgorithm ::= ENUMERATED  { 
       aes128Ccm,
@@ -225,8 +202,8 @@ GeographicRegion ::=
       ...
   }
 
-  EciesNistP256EncryptedKey ::=
-        SEQUENCE  { v               EccNistP256CurvePoint,
+  EciesP256EncryptedKey ::=
+        SEQUENCE  { v               EccP256CurvePoint,
                     c               OCTET STRING (SIZE (16)),
                     t               OCTET STRING (SIZE (16))
                   }
@@ -242,12 +219,14 @@ GeographicRegion ::=
       }
 
   BasePublicEncryptionKey ::= CHOICE { 
-          eciesNistP256      EccNistP256CurvePoint,
+          eciesNistP256             EccP256CurvePoint,
+          eciesBrainpoolP256r1      EccP256CurvePoint,
           ...
       }
 
   PublicVerificationKey ::= CHOICE  { 
-      ecdsaNistP256             EccNistP256CurvePoint,
+      ecdsaNistP256             EccP256CurvePoint,
+      ecdsaBrainpoolP256r1      EccP256CurvePoint,
       ...
   }
 
@@ -293,7 +272,8 @@ GeographicRegion ::=
       ... -- will define Structured SSP Range here
   }
     
-  SequenceOfOctetString ::= SEQUENCE OF OCTET STRING
+  SequenceOfOctetString ::= SEQUENCE (SIZE (0..MAX)) OF 
+    OCTET STRING (SIZE(0..MAX))
 
 
   -- ------------------------------------------------------------------
@@ -320,6 +300,7 @@ GeographicRegion ::=
     jValue  OCTET STRING (SIZE(3)),
     value   OCTET STRING (SIZE(10))
   }
+
   LaId ::= OCTET STRING (SIZE(2)) 
   LinkageSeed ::= OCTET STRING (SIZE(16))
 

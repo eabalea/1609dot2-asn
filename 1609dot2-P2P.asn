@@ -1,4 +1,3 @@
-
 IEEE1609dot2-Peer2Peer {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
 dot2(2) management (2) peer-to-peer (1)}
@@ -15,7 +14,7 @@ dot2(2) management (2) peer-to-peer (1)}
 DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
 EXPORTS ALL;
-
+ 
 IMPORTS 
   Certificate
 FROM IEEE1609dot2 {iso(1) identified-organization(3) ieee(111) 
@@ -24,7 +23,7 @@ FROM IEEE1609dot2 {iso(1) identified-organization(3) ieee(111)
 ;
 
 Ieee1609dot2Peer2PeerPDU ::= SEQUENCE {
-  version            INTEGER(1),
+  version            Uint8(1),
   content            CHOICE {
     caCerts            CaCertP2pPDU,
     crl                CrlP2pPDU,
