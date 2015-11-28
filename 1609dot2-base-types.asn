@@ -2,6 +2,10 @@ IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 standards-association-numbered-series-standards(2) wave-stds(1609)  
 dot2(2) base(1) base-types(2)}
 
+--<OSS.PDU IEEE1609dot2BaseTypes.Time32>--
+--<OSS.PDU IEEE1609dot2BaseTypes.Time64>--
+
+
 -- 
 --********************************************************************
 -- * IEEE P1609.2 Base Data Types 
@@ -293,8 +297,8 @@ GeographicRegion ::=
   Hostname ::= UTF8String (SIZE(0..255))
   LinkageValue ::= OCTET STRING (SIZE(9))
   GroupLinkageValue ::= SEQUENCE {
-    jValue  OCTET STRING (SIZE(3)),
-    value   OCTET STRING (SIZE(10))
+    jValue  OCTET STRING (SIZE(4)),
+    value   OCTET STRING (SIZE(9))
   }
   
   LaId ::= OCTET STRING (SIZE(2)) 

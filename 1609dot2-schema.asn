@@ -1,3 +1,5 @@
+--<OSS.PDU IEEE1609dot2.Ieee1609Dot2Data>--
+
 IEEE1609dot2 {iso(1) identified-organization(3) ieee(111) 
 standards-association-numbered-series-standards(2) wave-stds(1609)  
 dot2(2) base (1) schema (1)}
@@ -110,7 +112,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
       generationTime         Time64 OPTIONAL,
       expiryTime             Time64  OPTIONAL,
       generationLocation     ThreeDLocation OPTIONAL,
-      certLearningRequest    HashedId3 OPTIONAL,
+      p2pcdLearningRequest   HashedId3 OPTIONAL,
       missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
       encryptionKey          EncryptionKey OPTIONAL,
       ...
@@ -134,7 +136,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
             generationTime PRESENT,
             expiryTime ABSENT,
             generationLocation ABSENT,
-            certLearningRequest ABSENT,
+            p2pcdLearningRequest ABSENT,
             missingCrlIdentifier ABSENT,
             encryptionKey ABSENT
           })

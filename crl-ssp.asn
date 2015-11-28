@@ -18,14 +18,12 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   CrlSsp::= SEQUENCE {
       version         Uint8(1),
       cracaType       CracaType,
-      crls            SequenceOfPermissibleCrls,
+      crls            PermissibleCrls,
       ...
   }
 
   CracaType ::= ENUMERATED {isCraca, issuerIsCraca}
       
   PermissibleCrls ::= SEQUENCE OF CrlSeries
-
-  SequenceOfPermissibleCrls ::= SEQUENCE OF PermissibleCrls
 
 END
