@@ -85,7 +85,8 @@ ToBeSignedLinkageValueCrl ::= SEQUENCE {
 
 JMaxGroup ::= SEQUENCE {
     jmax              Uint8,
-    contents          SEQUENCE OF LAGroup
+    contents          SEQUENCE OF LAGroup,
+    ...
 }
 
 
@@ -101,14 +102,16 @@ SequenceOfLAGroup ::= SEQUENCE OF LAGroup
 
 IMaxGroup ::= SEQUENCE {
     iMax              Uint16,
-    contents          SequenceOfIndividualRevocation
+    contents          SequenceOfIndividualRevocation,
+    ...
 }
 
 SequenceOfIMaxGroup ::= SEQUENCE OF IMaxGroup
 
 IndividualRevocation ::= SEQUENCE { 
     linkage-seed1    LinkageSeed,
-    linkage-seed2    LinkageSeed
+    linkage-seed2    LinkageSeed,
+    ...
 }
 
 SequenceOfIndividualRevocation ::= SEQUENCE OF IndividualRevocation
@@ -118,7 +121,8 @@ GroupCrlEntry ::= SEQUENCE {
     la1Id            LaId,
     linkageSeed1     LinkageSeed,
     la2Id            LaId,
-    linkageSeed2     LinkageSeed
+    linkageSeed2     LinkageSeed,
+    ...
 }
 
 SequenceOfGroupCrlEntry ::= SEQUENCE OF GroupCrlEntry

@@ -255,8 +255,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
     assuranceLevel         SubjectAssurance OPTIONAL,
     appPermissions         SequenceOfPsidSsp OPTIONAL,
     certIssuePermissions   SequenceOfPsidGroupPermissions OPTIONAL,
-    explicitCertReqPermissions 
-                           SequenceOfPsidGroupPermissions OPTIONAL, 
+    certRequestPermissions SequenceOfPsidGroupPermissions OPTIONAL, 
     canRequestRollover     NULL OPTIONAL,
     encryptionKey          PublicEncryptionKey OPTIONAL,
     verifyKeyIndicator     VerificationKeyIndicator,

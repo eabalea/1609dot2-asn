@@ -17,7 +17,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
 
   CrlSsp::= SEQUENCE {
       version         Uint8(1),
-      cracaType       CracaType,
+      associatedCraca CracaType,
       crls            PermissibleCrls,
       ...
   }

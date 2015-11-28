@@ -109,7 +109,7 @@ GeographicRegion ::=
   IdentifiedRegion ::= 
         CHOICE    { countryOnly           CountryOnly,
                     countryAndRegions     CountryAndRegions,
-                    countryAndSubregion   CountryAndSubregions,
+                    countryAndSubregions  CountryAndSubregions,
                     ...
         }
 
