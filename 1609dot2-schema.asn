@@ -263,7 +263,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   }
   (WITH COMPONENTS { ..., appPermissions PRESENT} |
    WITH COMPONENTS { ..., certIssuePermissions PRESENT} |
-   WITH COMPONENTS { ..., explicitCertReqPermissions PRESENT})
+   WITH COMPONENTS { ..., certRequestPermissions PRESENT})
 
    CertificateId ::= CHOICE {
         linkageData             LinkageData,
