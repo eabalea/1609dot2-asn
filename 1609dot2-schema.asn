@@ -282,7 +282,7 @@ FROM IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111)
   EndEntityType ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
 
   PsidGroupPermissions ::= SEQUENCE {
-      appPermissions     SubjectPermissions,
+      subjectPermissions SubjectPermissions,
       minChainDepth      INTEGER DEFAULT 1, -- 0 for enrolment certs
       chainDepthRange    INTEGER DEFAULT 0, -- max depth = min + range
       eeType             EndEntityType DEFAULT {app}
