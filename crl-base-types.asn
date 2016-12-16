@@ -95,7 +95,8 @@ SequenceOfJMaxGroup ::= SEQUENCE OF JMaxGroup
 LAGroup ::= SEQUENCE {
     la1Id            LaId,
     la2Id            LaId,
-    contents          SequenceOfIMaxGroup 
+    contents          SequenceOfIMaxGroup,
+    ...
 }
 
 SequenceOfLAGroup ::= SEQUENCE OF LAGroup
