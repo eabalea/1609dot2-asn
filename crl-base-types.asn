@@ -85,7 +85,7 @@ ToBeSignedLinkageValueCrl ::= SEQUENCE {
 
 JMaxGroup ::= SEQUENCE {
     jmax              Uint8,
-    contents          SEQUENCE OF LAGroup,
+    contents          SequenceOfLAGroup,
     ...
 }
 
@@ -95,7 +95,7 @@ SequenceOfJMaxGroup ::= SEQUENCE OF JMaxGroup
 LAGroup ::= SEQUENCE {
     la1Id            LaId,
     la2Id            LaId,
-    contents          SequenceOfIMaxGroup,
+    contents         SequenceOfIMaxGroup,
     ...
 }
 
