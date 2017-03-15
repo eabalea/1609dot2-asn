@@ -32,13 +32,10 @@ Ieee1609dot2Peer2PeerPDU ::= SEQUENCE {
   version            Uint8(1),
   content            CHOICE {
     caCerts            CaCertP2pPDU,
-    crl                CrlP2pPDU,
     ...
   }
 }
 
 CaCertP2pPDU::= SEQUENCE OF Certificate
-
-CrlP2pPDU ::= NULL
 
 END
