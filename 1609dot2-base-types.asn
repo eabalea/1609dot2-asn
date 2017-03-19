@@ -6,7 +6,9 @@ dot2(2) base(1) base-types(2)}
 --********************************************************************
 --  IEEE P1609.2 Base Data Types 
 -- 
---******************************************************************** DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
+--******************************************************************** 
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN 
  
 EXPORTS ALL;
 
@@ -170,8 +172,8 @@ ElevInt ::= Uint16 -- Range is from -4096 to 61439 in units of one-tenth of a me
 Signature ::= CHOICE  {
     ecdsaNistP256Signature        EcdsaP256Signature,
     ecdsaBrainpoolP256r1Signature EcdsaP256Signature,
-    ......,
-                  ecdsaBrainpoolP384r1Signature EcdsaP384Signature,
+    ...,
+    ecdsaBrainpoolP384r1Signature EcdsaP384Signature
 }
 
 EcdsaP256Signature ::= SEQUENCE  {
@@ -243,7 +245,7 @@ BasePublicEncryptionKey ::= CHOICE  {
 PublicVerificationKey ::= CHOICE  { 
     ecdsaNistP256             EccP256CurvePoint,
     ecdsaBrainpoolP256r1      EccP256CurvePoint,
-    ...
+    ...,
     ecdsaBrainpoolP384r1      EccP384CurvePoint
 }
 
@@ -277,7 +279,9 @@ ServiceSpecificPermissions ::= CHOICE  {
     indexedSsp          IndexedSsp
 }
 
-BitmapSsp ::= OCTET STRING (SIZE(0..31)),
+BitmapSsp ::= OCTET STRING (SIZE(0..31))
+
+IndexedSsp ::= OCTET STRING -- To be provided later
 
 SspValue ::= OCTET STRING (SIZE(0..31))
 
@@ -300,8 +304,10 @@ SspRange ::= CHOICE  {
    
 BitmapSspRange ::= SEQUENCE  {
     sspValue            OCTET STRING (SIZE(1..32)),
-    sspBitmask          OCTET STRING (SIZE(1..32)),
+    sspBitmask          OCTET STRING (SIZE(1..32))
 }
+
+IndexedSspRange ::= OCTET STRING -- To be provided later
 
 SequenceOfOctetString ::= SEQUENCE (SIZE (0..MAX)) OF 
     OCTET STRING (SIZE(0..MAX))

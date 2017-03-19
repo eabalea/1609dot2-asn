@@ -15,7 +15,7 @@ EXPORTS ALL;
 IMPORTS 
   CrlSeries,
   EccP256CurvePoint,
-  EncryptedDataEncryptionKey,
+  EciesP256EncryptedKey,
   EncryptionKey,
   GeographicRegion,
   GroupLinkageValue,
@@ -114,9 +114,9 @@ HeaderInfo ::= SEQUENCE  {
     p2pcdLearningRequest   HashedId3 OPTIONAL,
     missingCrlIdentifier   MissingCrlIdentifier OPTIONAL,
     encryptionKey          EncryptionKey OPTIONAL,
-    ...
+    ...,
     multipleP2pcdRequest   SequenceOfHashedId3 OPTIONAL,
-    requestedCertificate   Certificate OPTIONAL,
+    requestedCertificate   Certificate OPTIONAL
 }
 
 MissingCrlIdentifier ::= SEQUENCE  {
@@ -279,7 +279,7 @@ LinkageData ::= SEQUENCE  {
     group-linkage-value   GroupLinkageValue OPTIONAL
 }
          
-EndEntityType ::= BIT STRING {app (0), enrol (1) } (SIZE (8)) (ALL EXCEPT {})
+EndEntityType ::= BIT STRING {app (0), enrol (1) } (SIZE (8))
 
 PsidGroupPermissions ::= SEQUENCE  {
     subjectPermissions SubjectPermissions,
